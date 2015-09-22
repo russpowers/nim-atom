@@ -6,12 +6,11 @@ AutoCompleter = require './auto-completer'
 ProjectManager = require './project-manager'
 Executor = require './executor'
 {CommandTypes} = require './constants'
-{arrayEqual, separateSpaces, debounce} = require './util'
+{hasExt, arrayEqual, separateSpaces, debounce} = require './util'
 
 checkForExecutable = (executablePath, cb) ->
   if executablePath != ''
     try
-      console.log executablePath
       process = new BufferedProcess
         command: executablePath
         args: ['--version']
@@ -19,7 +18,6 @@ checkForExecutable = (executablePath, cb) ->
           cb(code == 0)
           
       process.onWillThrowError ({error,handle}) =>
-        console.log error
         handle()
         cb false
     catch e
@@ -153,7 +151,7 @@ module.exports =
 
     @subscriptions.add atom.workspace.observeTextEditors (editor) =>
       editorPath = editor.getPath()
-      return if not editorPath.endsWith '.nim' and not editorPath.endsWith '.nims'
+      return if not hasExt editorPath, '.nim' and not hasExt editorPath, '.nims'
 
       # For binding alt-click
       editorSubscriptions = new SubAtom()

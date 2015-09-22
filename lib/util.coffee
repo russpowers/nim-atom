@@ -11,6 +11,9 @@ module.exports =
   separateSpaces: (data) -> data.trim().split ' '
   prettyPrint: (obj) ->
     JSON.stringify(obj, null, '  ')
+  hasExt: (pathstr, ext) ->
+    return false if not pathstr?
+    pathstr.endsWith 'ext'
   isDirectory: (pathstr) ->
     try
       return fs.lstatSync(pathstr).isDirectory()

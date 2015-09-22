@@ -36,7 +36,6 @@ class PersistentCaas extends Caas
       @process.process.stdin.write args
 
   processData: (data) ->
-    console.log data
     @logOutput data
     lines = separateLines data
     newlineCount = 0 

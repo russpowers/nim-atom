@@ -4,7 +4,6 @@ fs = require 'fs'
 knownFiles = {}
 
 findFile = (fullPath) ->
-  console.log fullPath
   sep = path.sep
 
   if fullPath[0] == '/'
