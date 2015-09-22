@@ -21,6 +21,7 @@ This is an Atom package for the Nim language that integrates with the Nim compil
 
 ## How to Use
 Use `File` -> `Open Folder` to open the root folder for a Nim project.  You should have a main project file, which is autodetected in the following order:
+
 1. The `.nim` file with the same name as the `.nimble` file in the root folder.  For example, if you have a `something.nimble`, it will use `something.nim` if found.
 2. `proj.nim`
 3. The `.nim` file with the same name as the root folder.  For example, if the opened folder is `C:\something`, it will use `C:\something\something.nim` if found.
