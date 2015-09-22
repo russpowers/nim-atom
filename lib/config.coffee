@@ -1,13 +1,13 @@
 module.exports =
   nimExecutablePath:
     type: 'string'
-    default: 'nim'
+    default: ''
     description: 'Full path to the nim executable (ex: c:\\nim\\bin\\nim).  This is not required if nim is in your PATH.'
     order: 1
 
   nimsuggestExecutablePath:
     type: 'string'
-    default: 'nimsuggest'
+    default: ''
     description: 'Full path to the nimsuggest executable (ex: c:\\nimsuggest\\nimsuggest).  Get it at <a href="https://github.com/nim-lang/nimsuggest">https://github.com/nim-lang/nimsuggest</a>.'
     order: 2
 
@@ -19,7 +19,7 @@ module.exports =
 
   onTheFlyChecking:
     type: 'boolean'
-    default: true
+    default: false
     description: 'Enables live file-level eror checking.  If this is disabled, files will only be checked for errors on save.  You must restart Atom for this to take effect.'
     order: 4
 

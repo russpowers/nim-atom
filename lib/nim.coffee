@@ -1,8 +1,4 @@
 {BufferedProcess, Point} = require 'atom'
-temp = require('temp').track()
-fs = require 'fs'
-Path = require 'path'
-KnownFiles = require './known-files'
 SubAtom = require 'sub-atom'
 Config = require './config'
 Linter = require './linter'
@@ -12,11 +8,14 @@ Executor = require './executor'
 {CommandTypes} = require './constants'
 {arrayEqual, separateSpaces, debounce} = require './util'
 
-navigateToFile = (file, line, col) ->
+navigateToFile = (file, line, col, sourceEditor) ->
   # This function uses Nim coordinates
   atomLine = line - 1
   atom.workspace.open(file)
     .done (ed) ->
+      # This belongs to the current project, even if it may be in a different place
+      if not ed.nimProject?
+        ed.nimProject = sourceEditor.nimProject
       pos = new Point(atomLine, col)
       ed.scrollToBufferPosition(pos, center: true)
       ed.setCursorBufferPosition(pos)
@@ -70,8 +69,8 @@ module.exports =
   activate: (state) ->
     @options =
       rootFilenames: separateSpaces(atom.config.get 'nim.projectFilenames')
-      nimSuggestExe: atom.config.get 'nim.nimsuggestExecutablePath'
-      nimExe: atom.config.get 'nim.nimExecutablePath'
+      nimSuggestExe: atom.config.get 'nim.nimsuggestExecutablePath' or 'nimsuggest'
+      nimExe: atom.config.get('nim.nimExecutablePath') or 'nim'
       nimSuggestEnabled: atom.config.get 'nim.nimsuggestEnabled'
       lintOnFly: atom.config.get 'nim.onTheFlyChecking'
 
@@ -89,18 +88,23 @@ module.exports =
         return if not editor
         self.executor.execute editor, CommandTypes.DEFINITION, (data) ->
           if data
-            navigateToFile data.path, data.line, data.col
+            navigateToFile data.path, data.line, data.col, editor
 
     updateProjectManagerDebounced = debounce 2000, =>
       @checkForExes => @updateProjectManager()
 
     @subscriptions = new SubAtom()
     @subscriptions.add atom.config.onDidChange 'nim.nimExecutablePath', (path) =>
-      @options.nimExe = path.newValue
+      @options.nimExe = path.newValue or 'nim'
       updateProjectManagerDebounced()
 
     @subscriptions.add atom.config.onDidChange 'nim.nimsuggestExecutablePath', (path) =>
-      @options.nimSuggestExe = path.newValue
+      @options.nimSuggestExe = path.newValue or 'nimsuggest'
+      nsen = atom.config.get 'nim.nimsuggestEnabled'
+      if path.newValue == ''
+        atom.config.set('nim.nimsuggestEnabled', false) if nsen
+      else
+        atom.config.set('nim.nimsuggestEnabled', true) if not nsen
       updateProjectManagerDebounced()
 
     @subscriptions.add atom.config.onDidChange 'nim.nimsuggestEnabled', (enabled) =>

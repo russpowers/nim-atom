@@ -28,6 +28,12 @@ Use `File` -> `Open Folder` to open the root folder for a Nim project.  You shou
 If you don't have a main project file, that's ok, but it won't use Nimsuggest, which means that autocomplete will be slower.  Also, it means that .nim.cfg settings will not propagate to included files.  And maybe other bad stuff.
 
 ## Notes
-Sometimes the nim compiler or nimsuggest crashes, and you'll see the error notification.  It's not a big deal, and nimsuggest will auto-restart.  You can view full error dumps in the developer tools console (`Ctrl`-`Alt`-`i`).  
+Sometimes the nim compiler or nimsuggest crashes, and you'll see the error notification.  It's not a big deal, and nimsuggest will auto-restart.  You can view full error dumps in the developer tools console (`Ctrl`-`Alt`-`i`).
+
+If there are a lot of errors/warnings, Atom will slow down a lot.  This is because it creates every error/warning box instead of reusing them.  This is being addressed by Atom linter.
+
+Really long docstrings can cause the autocomplete window to jump around a bit.  I think this is an issue with autocomplete-plus.
+
+## Credit
 
 This originally started as a fork of https://github.com/zah/nim.atom/, but it has changed so much that I just created a new project.

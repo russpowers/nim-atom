@@ -3,7 +3,7 @@ temp = require 'temp'
 {prettyPrint} = require './util'
 
 class Caas
-  constructor: (@folderPath) ->
+  constructor: ->
     @trackedTemp = temp.track()
     tempFile = @trackedTemp.openSync 
       prefix: 'nimsuggest'

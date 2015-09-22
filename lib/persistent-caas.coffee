@@ -5,8 +5,8 @@ Caas = require './caas'
 {separateLines} = require './util'
 
 class PersistentCaas extends Caas
-  constructor: (folderPath, @rootFilename, @options) ->
-    super(folderPath)
+  constructor: (@folderPath, @rootFilename, @options) ->
+    super()
 
   doCommand: (cmd) ->
     if cmd.type == CommandTypes.LINT

@@ -1,4 +1,5 @@
 Project = require './project'
+{isDirectory} = require './util'
 
 class ProjectManager
   constructor: ->
@@ -6,6 +7,7 @@ class ProjectManager
     @projects = []
 
   destroy: ->
+    @nonProject.destroy() if @nonProject?
     for project in @projects
       project.destroy()
     @projects = []
@@ -18,12 +20,17 @@ class ProjectManager
           found = project
         else if found.folderPath.length > project.folderPath.length
           found = project
-    found
+    if found?
+      found
+    else
+      @nonProject
 
   update: (projectPaths, options) ->
     @projectPaths = projectPaths
     @destroy()
-    @projects = for projectPath in projectPaths
+    @nonProject = new Project null, options
+    projectFolders = projectPaths.filter isDirectory
+    @projects = for projectPath in projectFolders
       new Project(projectPath, options)
 
 

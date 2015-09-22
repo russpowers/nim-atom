@@ -5,8 +5,8 @@ Caas = require './caas'
 {separateLines} = require './util'
 
 class OnDemandCaas extends Caas
-  constructor: (folderPath, @options) ->
-    super(folderPath)
+  constructor: (@options) ->
+    super()
 
   processData: (data) ->
     @logOutput data

@@ -2,10 +2,11 @@
 KnownFiles = require './known-files'
 
 prettifyDocStr = (str) ->
-  str.replace /\\x([0-9A-F]{2})/g, (match, hex) ->
+  replaced = str.replace /\\x([0-9A-F]{2})/g, (match, hex) ->
         String.fromCharCode(parseInt(hex, 16))
-     .replace /\`\`?([^\`]+)\`?\`/g, (match, ident) -> ident
-     .replace /\\([^\\])/g, (match, escaped) -> escaped
+    .replace /\`\`?([^\`]+)\`?\`/g, (match, ident) -> ident
+    .replace /\\([^\\])/g, (match, escaped) -> escaped
+  if replaced == '"' then '' else replaced
 
 class Executor
   constructor: (@projectManager) ->
@@ -53,8 +54,7 @@ class Executor
 
   doCommand: (cmd, cb) ->
     @currentCommand = cmd
-    project = @projectManager.getProjectForPath cmd.filePath
-    project.caas.sendCommand cmd, (err, lines) =>
+    cmd.project.caas.sendCommand cmd, (err, lines) =>
       # Handle this better
       if err?
         atom.notifications.addError "Nim: Error executing command: #{cmd.type}",
@@ -91,6 +91,11 @@ class Executor
     cmd.col = cursor.column+1
     cmd.row = cursor.row+1
     cmd.filePath = editor.getPath()
+    if editor.nimProject?
+      cmd.project = editor.nimProject
+    else
+      cmd.project = @projectManager.getProjectForPath cmd.filePath
+      editor.nimProject = cmd.project
 
     # Make sure only one command executes at a time
     if @currentCommand?

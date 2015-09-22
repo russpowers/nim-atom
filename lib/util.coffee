@@ -11,6 +11,8 @@ module.exports =
   separateSpaces: (data) -> data.trim().split ' '
   prettyPrint: (obj) ->
     JSON.stringify(obj, null, '  ')
+  isDirectory: (pathstr) ->
+    fs.lstatSync(pathstr).isDirectory()
   debounce: (wait, func, immediate) ->
     timeout = null
     return ->

@@ -23,11 +23,14 @@ findRootFilePath = (folderPath, rootFilenames) ->
 
 class Project
   constructor: (@folderPath, @options) ->
-    @rootFilePath = findRootFilePath folderPath, options.rootFilenames
-    if @rootFilePath and @options.nimSuggestEnabled and @options.nimSuggestExists
-      @caas = new PersistentCaas folderPath, path.basename(@rootFilePath), options
-    else if @options.nimExists
-      @caas = new OnDemandCaas folderPath, options
+    if not @folderPath?
+      @caas = new OnDemandCaas options
+    else
+      @rootFilePath = findRootFilePath folderPath, options.rootFilenames
+      if @rootFilePath and @options.nimSuggestEnabled and @options.nimSuggestExists
+        @caas = new PersistentCaas folderPath, path.basename(@rootFilePath), options
+      else if @options.nimExists
+        @caas = new OnDemandCaas options
 
   destroy: ->
     @caas.destroy() if @caas?
