@@ -23,9 +23,20 @@ navigateToFile = (file, line, col, sourceEditor) ->
 module.exports =
   config: Config
 
+  updateProjectsOnEditors: ->
+    # Try to match up old and new projects
+    for editor in atom.workspace.getTextEditors()
+      if editor.nimProject?
+        editor.nimProject = 
+          if editor.nimProject.folderPath?
+            @projectManager.getProjectForPath editor.nimProject.folderPath
+          else
+            @projectManager.getProjectForPath editor.getPath()
+    null
+
   updateProjectManager: ->
     @projectManager.update(atom.project.rootDirectories.map((x) -> x.path), @options)
-
+    @updateProjectsOnEditors()
 
   checkForExes: (cb) ->
     oldNimExists = @options.nimExists
