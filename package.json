@@ -1,6 +1,6 @@
 {
   "name": "nim",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "license": "MIT",
   "description": "Nim for Atom with autocomplete, error checking, and jump-to-definition",
   "homepage": "https://github.com/russpowers/nim-atom",
