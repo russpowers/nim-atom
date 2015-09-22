@@ -8,6 +8,16 @@ Executor = require './executor'
 {CommandTypes} = require './constants'
 {arrayEqual, separateSpaces, debounce} = require './util'
 
+checkForExecutable = (executablePath, cb) ->
+  if executablePath != ''
+    new BufferedProcess
+      command: executablePath
+      args: ['--version']
+      exit: (code) =>
+        cb(code == 0)
+  else
+    cb false
+
 navigateToFile = (file, line, col, sourceEditor) ->
   # This function uses Nim coordinates
   atomLine = line - 1
@@ -58,29 +68,22 @@ module.exports =
 
       cb()
 
-    new BufferedProcess
-      command: @options.nimExe
-      args: ['--version']
-      exit: (code) =>
-        @options.nimExists = code == 0
-        checkedNim = true
-        if checkedNimSuggest
+    checkForExecutable @options.nimExe, (found) =>
+      @options.nimExists = found
+      checkedNim = true
+      if checkedNimSuggest
           done()
 
-    new BufferedProcess
-      command: @options.nimSuggestExe
-      args: ['--version']
-      exit: (code) =>
-        @options.nimSuggestExists = code == 0
-        console.log code
-        checkedNimSuggest = true
-        if checkedNim
+    checkForExecutable @options.nimSuggestExe, (found) =>
+      @options.nimSuggestExists = found
+      checkedNimSuggest = true
+      if checkedNim
           done()
 
   activate: (state) ->
     @options =
       rootFilenames: separateSpaces(atom.config.get 'nim.projectFilenames')
-      nimSuggestExe: atom.config.get 'nim.nimsuggestExecutablePath' or 'nimsuggest'
+      nimSuggestExe: atom.config.get('nim.nimsuggestExecutablePath') or 'nimsuggest'
       nimExe: atom.config.get('nim.nimExecutablePath') or 'nim'
       nimSuggestEnabled: atom.config.get 'nim.nimsuggestEnabled'
       lintOnFly: atom.config.get 'nim.onTheFlyChecking'
