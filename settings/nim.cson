@@ -1,0 +1,17 @@
+'.source.nim':
+  editor:
+    foldEndPattern: '^\\s*"""\\s*$'
+    commentStart: '# '
+
+    increaseIndentPattern: '(?x)
+      ^\\s*(
+        ((if|when|elif|else|except|finally|for|try|while|of)\\b.*:)|
+        ((proc|macro|iterator|template|converter)\\b.*\\=)|
+        (import|var|const|type)
+      )\\s*$'
+
+    decreaseIndentPattern: '(?x)
+      ^\\s*(
+        ((return|break|continue|raise)\\n)|
+        ((elif|else|except|finally)\\b.*:)
+      )\\s*$'

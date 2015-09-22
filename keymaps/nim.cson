@@ -1,0 +1,3 @@
+".editor":
+  "alt-g": "nim:goto-definition"
+

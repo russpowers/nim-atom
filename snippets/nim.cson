@@ -1,0 +1,4 @@
+'.source.nim':
+  'Try/Except':
+    'prefix': 'try'
+    'body': 'try:\n\t${1:discard}\nexcept ${2:Exception}:\n\t${3:raise}'
