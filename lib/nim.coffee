@@ -10,13 +10,28 @@ Executor = require './executor'
 
 checkForExecutable = (executablePath, cb) ->
   if executablePath != ''
-    new BufferedProcess
-      command: executablePath
-      args: ['--version']
-      exit: (code) =>
-        cb(code == 0)
+    try
+      console.log executablePath
+      process = new BufferedProcess
+        command: executablePath
+        args: ['--version']
+        exit: (code) =>
+          cb(code == 0)
+          
+      process.onWillThrowError ({error,handle}) =>
+        console.log error
+        handle()
+        cb false
+    catch e
+      cb false
   else
     cb false
+
+fixExecutableFilename = (executablePath) ->
+  if executablePath.indexOf('~') != -1
+    executablePath.replace('~', process.env.HOME)
+  else
+    executablePath
 
 navigateToFile = (file, line, col, sourceEditor) ->
   # This function uses Nim coordinates
@@ -83,8 +98,8 @@ module.exports =
   activate: (state) ->
     @options =
       rootFilenames: separateSpaces(atom.config.get 'nim.projectFilenames')
-      nimSuggestExe: atom.config.get('nim.nimsuggestExecutablePath') or 'nimsuggest'
-      nimExe: atom.config.get('nim.nimExecutablePath') or 'nim'
+      nimSuggestExe: fixExecutableFilename(atom.config.get('nim.nimsuggestExecutablePath') or 'nimsuggest')
+      nimExe: fixExecutableFilename(atom.config.get('nim.nimExecutablePath') or 'nim')
       nimSuggestEnabled: atom.config.get 'nim.nimsuggestEnabled'
       lintOnFly: atom.config.get 'nim.onTheFlyChecking'
 
@@ -109,11 +124,11 @@ module.exports =
 
     @subscriptions = new SubAtom()
     @subscriptions.add atom.config.onDidChange 'nim.nimExecutablePath', (path) =>
-      @options.nimExe = path.newValue or 'nim'
+      @options.nimExe = fixExecutableFilename(path.newValue or 'nim')
       updateProjectManagerDebounced()
 
     @subscriptions.add atom.config.onDidChange 'nim.nimsuggestExecutablePath', (path) =>
-      @options.nimSuggestExe = path.newValue or 'nimsuggest'
+      @options.nimSuggestExe = fixExecutableFilename(path.newValue or 'nimsuggest')
       nsen = atom.config.get 'nim.nimsuggestEnabled'
       if path.newValue == ''
         atom.config.set('nim.nimsuggestEnabled', false) if nsen
@@ -137,6 +152,10 @@ module.exports =
         @updateProjectManager()
 
     @subscriptions.add atom.workspace.observeTextEditors (editor) =>
+      editorPath = editor.getPath()
+      return if not editorPath.endsWith '.nim' and not editorPath.endsWith '.nims'
+
+      # For binding alt-click
       editorSubscriptions = new SubAtom()
       editorElement = atom.views.getView(editor)
       editorLines = editorElement.shadowRoot.querySelector '.lines'

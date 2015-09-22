@@ -1,4 +1,5 @@
 {CommandTypes} = require './constants'
+fuzzaldrin = require 'fuzzaldrin'
 
 hasCachedResults = (editor, bufferPosition, prefix) ->
   return false if not editor.nimSuggestCache
@@ -26,17 +27,21 @@ module.exports = (executor) ->
   getSuggestions: ({editor, bufferPosition, scopeDescriptor, prefix}) =>
     return new Promise (resolve) =>
       buildResults = (symbols) ->
-        fuzzyMatchingRegex = new RegExp(".*" + prefix.split("").join(".*"), "i")
-        results = []
-        for sym in symbols
-          if sym.text.match(fuzzyMatchingRegex)
-            results.push
-              text: sym.text
-              type: sym.type
-              rightLabelHTML: sym.sig
-              description: sym.description
+        if prefix == '.'
+          fuzzaldrin.filter symbols, '', key: 'text'
+        else
+          fuzzaldrin.filter symbols, prefix, key: 'text'
+        # fuzzyMatchingRegex = new RegExp(".*" + prefix.split("").join(".*"), "i")
+        # results = []
+        # for sym in symbols
+        #   if sym.text.match(fuzzyMatchingRegex)
+        #     results.push
+        #       text: sym.text
+        #       type: sym.type
+        #       rightLabelHTML: sym.sig
+        #       description: sym.description
 
-        results
+        # results
 
       if hasCachedResults editor, bufferPosition, prefix
         resolve buildResults(editor.nimSuggestCache.symbols)

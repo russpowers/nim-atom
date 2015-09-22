@@ -6,7 +6,7 @@ prettifyDocStr = (str) ->
         String.fromCharCode(parseInt(hex, 16))
     .replace /\`\`?([^\`]+)\`?\`/g, (match, ident) -> ident
     .replace /\\([^\\])/g, (match, escaped) -> escaped
-  if replaced == '"' then '' else replaced
+  if replaced == '"' or replaced == '' then ' ' else replaced
 
 class Executor
   constructor: (@projectManager) ->
@@ -32,6 +32,7 @@ class Executor
         path: KnownFiles.getCanonical(path)
         row: line
         col: col
+        rightLabelHTML: sig
 
       item
 

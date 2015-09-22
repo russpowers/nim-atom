@@ -32,6 +32,7 @@
     "linter": ">=1.0.0"
   },
   "dependencies": {
+    "fuzzaldrin": "^2.1.0",
     "sub-atom": "^1.1.0",
     "temp": "^0.8.3"
   }

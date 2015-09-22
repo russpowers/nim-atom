@@ -7,6 +7,8 @@ Caas = require './caas'
 class PersistentCaas extends Caas
   constructor: (@folderPath, @rootFilename, @options) ->
     super()
+    # Start Nimsuggest when project is opened, since sometimes it takes a few secs
+    @ensureCaas()
 
   doCommand: (cmd) ->
     if cmd.type == CommandTypes.LINT
@@ -34,28 +36,31 @@ class PersistentCaas extends Caas
       @process.process.stdin.write args
 
   processData: (data) ->
+    console.log data
     @logOutput data
     lines = separateLines data
-    newlineCount = 0
-    resultsStarted = false
+    newlineCount = 0 
     for line in lines
       trimmed = line.trim()
-      if trimmed.length == 0
+      if @initialLineCount < 4
+        # Ignore help text
+        @initialLineCount += 1
+      else if trimmed.length == 0
         newlineCount = newlineCount + 1
         if newlineCount == 2
           @onCommandDone()
-      else if trimmed == '>' # empty
+      else if trimmed == '>'
+        # For Windows, '>' is an empty result, not followed by newline
         @onCommandDone()
-      else if trimmed.startsWith '>' # results always start with a >
-        newlineCount = 0
-        resultsStarted = true
+      else if trimmed.startsWith '> '
+        # The first result in Windows will start with '> '
         @onCaasLine trimmed.substr(2)
-      else if resultsStarted
-        newlineCount = 0
+      else
         @onCaasLine trimmed
     true # Discard the lines
 
   startCaas: ->
+    @initialLineCount = 0
     @process = new BufferedProcess
       command: @options.nimSuggestExe
       args: ['--stdin', @rootFilename]
@@ -65,17 +70,17 @@ class PersistentCaas extends Caas
 
       exit: (code) =>
         return if code == 0
-        # Not sure what to do here, need a way to propagate up nicely
         console.log "Nimsuggest crashed..."
         @process = null
         if @currentCb?
           @onCommandFailed()
 
-    @process.onWillThrowError ({error,handle}) => 
+    @process.onWillThrowError ({error,handle}) =>
+      handle()
+      console.log "Nimsuggest crashed..."
+      @process = null
       if @currentCb?
         @onCommandFailed error
-      else
-        throw error
 
   ensureCaas: ->
     if not @process?

@@ -12,7 +12,10 @@ module.exports =
   prettyPrint: (obj) ->
     JSON.stringify(obj, null, '  ')
   isDirectory: (pathstr) ->
-    fs.lstatSync(pathstr).isDirectory()
+    try
+      return fs.lstatSync(pathstr).isDirectory()
+    catch err
+      if err.code == 'ENOENT' then return false else throw err
   debounce: (wait, func, immediate) ->
     timeout = null
     return ->

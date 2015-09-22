@@ -4,14 +4,15 @@ fs = require 'fs'
 knownFiles = {}
 
 findFile = (fullPath) ->
+  console.log fullPath
   sep = path.sep
 
   if fullPath[0] == '/'
-    foundPath = ''
+    foundPath = '/'
     segments = fullPath.split sep
   else
     foundPath = fullPath[0].toUpperCase() + ':'
-    segments = fullPath.split(sep)
+    segments = fullPath.split sep
   
   for i in [1 ... segments.length]
     files = fs.readdirSync foundPath

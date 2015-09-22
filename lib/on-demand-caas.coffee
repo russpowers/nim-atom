@@ -25,7 +25,11 @@ class OnDemandCaas extends Caas
       stdout: (data) => @processData data
       exit: (code) =>
         @onCommandDone()
-        # We can't catch an exit code if the command crashed, so need to parse it somewehere
+    
+    @process.onWillThrowError ({error,handle}) =>
+      handle()
+      console.log "Nim crashed..."
+      @onCommandFailed error
 
   ensureCaas: -> # Nothing to do, it's on demand..
 
@@ -48,7 +52,7 @@ class OnDemandCaas extends Caas
       args = ["idetools", "--#{type}", "--listFullPaths", "--colors:off", "--verbosity:0", trackArg, cmd.filePath]
       fs.writeFile @tempFilePath, cmd.dirtyFileData, (err) =>
         if err?
-          @oneCommandFailed()
+          @onCommandFailed()
         else
           @execProcess args
     else
