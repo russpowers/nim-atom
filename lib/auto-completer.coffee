@@ -27,14 +27,15 @@ module.exports = (executor) ->
   getSuggestions: ({editor, bufferPosition, scopeDescriptor, prefix}) =>
     return new Promise (resolve) =>
       buildResults = (symbols) ->
-        # It should remove the prefix on insertion, but it doesn't, so we need to
-        # manually set it
-        for symbol in symbols
-          symbol.replacementPrefix = prefix
-
         if prefix == '.'
+          for symbol in symbols
+            symbol.replacementPrefix = ''
           fuzzaldrin.filter symbols, '', key: 'text'
         else
+          # It should remove the prefix on insertion, but it doesn't, so we need to
+          # manually set it
+          for symbol in symbols
+            symbol.replacementPrefix = prefix
           fuzzaldrin.filter symbols, prefix, key: 'text'
 
       if hasCachedResults editor, bufferPosition, prefix
