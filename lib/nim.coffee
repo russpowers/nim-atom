@@ -103,7 +103,10 @@ module.exports =
 
     @projectManager = new ProjectManager()
     @executor = new Executor @projectManager
-    @checkForExes => @activateAfterChecks(state)
+    @checkForExes => 
+      require('atom-package-deps').install('nim', true)
+        .then => @activateAfterChecks(state)
+        
 
   activateAfterChecks: (state) ->
     @updateProjectManager()
