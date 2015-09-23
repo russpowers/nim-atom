@@ -12,10 +12,10 @@ This is an Atom package for the Nim language that integrates with the Nim compil
 1. [Install Nim](http://nim-lang.org/download.html) or [build Nim from source](https://github.com/nim-lang/Nim)
 2. [Install Nimble](https://github.com/nim-lang/nimble) (optional, needed for Nimsuggest)
 3. [Install Nimsuggest](https://github.com/nim-lang/nimsuggest) (optional, highly recommended, improves autocomplete and jump-to-definition performance)
-4. Install this package in Atom: `File` -> `Settings` -> `Install`, then search for `nim`
+4. Install this package in Atom: `File` -> `Settings` (or `Edit` -> `Preferences`) -> `Install`, then search for `nim`
 
 ## Configuration
-1. Go to the package settings in Atom: `File` -> `Settings` -> `Packages` -> `nim`
+1. Go to the package settings in Atom: `File` -> `Settings` (or `Edit` -> `Preferences`) -> `Packages` -> `nim`
 2. If `nim` and/or `nimsuggest` are not in your PATH, then set the paths for them.
 3. Optionally enable on-the-fly checking, which will error check the file anytime you make changes.
 

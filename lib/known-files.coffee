@@ -10,15 +10,21 @@ findFile = (fullPath) ->
     foundPath = '/'
     segments = fullPath.split sep
   else
-    foundPath = fullPath[0].toUpperCase() + ':'
+    foundPath = fullPath[0].toUpperCase() + ':\\'
     segments = fullPath.split sep
   
+  first = true
+
   for i in [1 ... segments.length]
     files = fs.readdirSync foundPath
     found = false
     for file in files
       if file.toLowerCase() == segments[i]
-        foundPath = foundPath + sep + file
+        if first
+          foundPath += file
+          first = false
+        else
+          foundPath += sep + file
         found = true
         break
 
