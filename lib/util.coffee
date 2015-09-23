@@ -13,7 +13,7 @@ module.exports =
     JSON.stringify(obj, null, '  ')
   hasExt: (pathstr, ext) ->
     return false if not pathstr?
-    pathstr.endsWith 'ext'
+    pathstr.endsWith ext
   isDirectory: (pathstr) ->
     try
       return fs.lstatSync(pathstr).isDirectory()

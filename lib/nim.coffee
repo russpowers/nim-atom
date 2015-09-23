@@ -108,6 +108,11 @@ module.exports =
         .then => @activateAfterChecks(state)
         
 
+  gotoDefinition: (editor) ->
+    @executor.execute editor, CommandTypes.DEFINITION, (data) ->
+      if data
+        navigateToFile data.path, data.line, data.col, editor
+
   activateAfterChecks: (state) ->
     @updateProjectManager()
     
@@ -116,9 +121,7 @@ module.exports =
       'nim:goto-definition': (ev) ->
         editor = @getModel()
         return if not editor
-        self.executor.execute editor, CommandTypes.DEFINITION, (data) ->
-          if data
-            navigateToFile data.path, data.line, data.col, editor
+        self.gotoDefinition editor
 
     updateProjectManagerDebounced = debounce 2000, =>
       @checkForExes => @updateProjectManager()
@@ -141,8 +144,8 @@ module.exports =
       @options.nimSuggestEnabled = enabled.newValue
       updateProjectManagerDebounced()
 
-    @subscriptions.add atom.config.observe 'nim.useAltClickToJumpToDefinition', (enabled) =>
-      @options.altClickEnabled = enabled
+    @subscriptions.add atom.config.observe 'nim.useCtrlShiftClickToJumpToDefinition', (enabled) =>
+      @options.ctrlShiftClickEnabled = enabled
 
     @subscriptions.add atom.config.onDidChange 'nim.projectFilenames', (filenames) =>
       @options.rootFilenames = separateSpaces filenames.newValue
@@ -154,15 +157,20 @@ module.exports =
 
     @subscriptions.add atom.workspace.observeTextEditors (editor) =>
       editorPath = editor.getPath()
-      return if not hasExt editorPath, '.nim' and not hasExt editorPath, '.nims'
+      return if not hasExt(editorPath, '.nim') and not hasExt(editorPath, '.nims')
 
-      # For binding alt-click
+      # For binding ctrl-shift-click
       editorSubscriptions = new SubAtom()
       editorElement = atom.views.getView(editor)
       editorLines = editorElement.shadowRoot.querySelector '.lines'
+
       editorSubscriptions.add editorLines, 'mousedown', (e) =>
-        return unless @options.altClickEnabled and event.altKey and event.which is 1
-        setTimeout(() -> atom.commands.dispatch editorElement, 'nim:goto-definition', 0)
+        return unless @options.ctrlShiftClickEnabled 
+        return unless e.which is 1 and e.shiftKey and e.ctrlKey
+        screenPos = editorElement.component.screenPositionForMouseEvent(e)
+        editor.setCursorScreenPosition screenPos
+        @gotoDefinition editor
+        return false
       editorSubscriptions.add editor.onDidDestroy =>
         editorSubscriptions.dispose()
         @subscriptions.remove(editorSubscriptions)

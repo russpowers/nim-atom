@@ -23,7 +23,7 @@ module.exports =
     description: 'Enables live file-level eror checking.  If this is disabled, files will only be checked for errors on save.  You must restart Atom for this to take effect.'
     order: 4
 
-  useAltClickToJumpToDefinition:
+  useCtrlShiftClickToJumpToDefinition:
     type: 'boolean'
     default: true
     description: 'If this is disabled, alt-g can also be used, but it is slow for some reason.'
