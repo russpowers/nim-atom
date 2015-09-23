@@ -7,7 +7,8 @@
       ^\\s*(
         ((if|when|elif|else|except|finally|for|try|while|of)\\b.*:)|
         ((proc|macro|iterator|template|converter)\\b.*\\=)|
-        (import|var|const|type)
+        (import|var|const|type)|
+        (.*\\=\\s*enum)
       )\\s*$'
 
     decreaseIndentPattern: '(?x)
