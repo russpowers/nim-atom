@@ -1,9 +1,14 @@
 path = require 'path'
 fs = require 'fs'
+os = require 'os'
+
+nimCaseInsensitiveOS = os.platform() == 'win32'
 
 knownFiles = {}
 
 findFile = (fullPath) ->
+  return fullPath if not nimCaseInsensitiveOS
+
   sep = path.sep
 
   if fullPath[0] == '/'
@@ -17,9 +22,10 @@ findFile = (fullPath) ->
 
   for i in [1 ... segments.length]
     files = fs.readdirSync foundPath
+    lowerSegment = segments[i].toLowerCase()
     found = false
     for file in files
-      if file.toLowerCase() == segments[i]
+      if file.toLowerCase() == lowerSegment
         if first
           foundPath += file
           first = false
@@ -29,7 +35,7 @@ findFile = (fullPath) ->
         break
 
     if found == false
-      throw new Error("Could not find file #{fullPath}")
+      throw new Error("Could not find file #{fullPath}, ")
 
   return foundPath
 
