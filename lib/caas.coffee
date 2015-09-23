@@ -40,7 +40,8 @@ class Caas
       setTimeout cb, 100
 
   onCommandDone: ->
-    @currentCb null, @lines
+    if @currentCb?
+      @currentCb null, @lines
     #cb = () => 
       
     #setTimeout cb, 0
