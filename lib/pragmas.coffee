@@ -52,6 +52,7 @@ module.exports = [
   (text: '{.procvar.}', description: ' '),
   (text: '{.pure.}', description: ' '),
   (text: '{.push.}', description: ' '),
+  (text: '{.raises.}', description: ' '),
   (text: '{.register.}', description: ' '),
   (text: '{.requiresinit.}', description: ' '),
   (text: '{.shallow.}', description: ' '),
