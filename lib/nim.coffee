@@ -7,6 +7,9 @@ ProjectManager = require './project-manager'
 Executor = require './executor'
 {CommandTypes, AutoCompleteOptions} = require './constants'
 {hasExt, arrayEqual, separateSpaces, debounce} = require './util'
+cp = require "child_process"
+shell = require 'shell'
+#process.exit(0);
 
 checkForExecutable = (executablePath, cb) ->
   if executablePath != ''
@@ -94,6 +97,10 @@ module.exports =
           done()
 
   activate: (state) ->
+    #shell.openItem 'd:\\nimtest\\run.bat'
+    #cp.exec 'cmd /k /s d:\\nimtest\\run.bat',
+    #  cwd: 'd:\\nimtest'
+
     @options =
       rootFilenames: separateSpaces(atom.config.get 'nim.projectFilenames')
       nimSuggestExe: fixExecutableFilename(atom.config.get('nim.nimsuggestExecutablePath') or 'nimsuggest')
@@ -109,19 +116,43 @@ module.exports =
         
 
   gotoDefinition: (editor) ->
-    @executor.execute editor, CommandTypes.DEFINITION, (data) ->
-      if data
+    @executor.execute editor, CommandTypes.DEFINITION, (err, data) ->
+      if not err? and data?
         navigateToFile data.path, data.line, data.col, editor
+
+  build: (editor, cb) ->
+    @executor.execute editor, CommandTypes.BUILD, (err, result) ->
+      if err?
+        cb(false) if cb?
+      else if result.code != 0
+        atom.notifications.addError "Build failed."
+        cb(false) if cb?
+      else
+        atom.notifications.addSuccess "Build succeeded."
+        cb(true) if cb?
 
   activateAfterChecks: (state) ->
     @updateProjectManager()
     
     self = @
+
     atom.commands.add 'atom-text-editor',
       'nim:goto-definition': (ev) ->
         editor = @getModel()
         return if not editor
         self.gotoDefinition editor
+
+    atom.commands.add 'atom-text-editor',
+      'nim:run': (ev) ->
+        editor = @getModel()
+        return if not editor
+        self.build editor
+
+    atom.commands.add 'atom-text-editor',
+      'nim:build': (ev) ->
+        editor = @getModel()
+        return if not editor
+        self.build editor
 
     updateProjectManagerDebounced = debounce 2000, =>
       @checkForExes => @updateProjectManager()
@@ -188,6 +219,6 @@ module.exports =
     @subscriptions.dispose()
     @projectManager.destroy()
 
-  nimLinter: -> Linter @options
+  nimLinter: -> Linter @executor, @options
 
   nimAutoComplete: -> AutoCompleter @executor, @options

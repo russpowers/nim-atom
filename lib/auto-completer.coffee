@@ -95,10 +95,13 @@ module.exports = (executor, options) ->
       if hasCachedResults editor, bufferPosition, prefixInfo
         resolve @buildResults(editor.nimSuggestCache.symbols, prefixInfo)
       else if prefixInfo.text.length > 0
-        executor.execute editor, CommandTypes.SUGGEST, (symbols) =>
-          editor.nimSuggestCache =
-            prefixInfo: prefixInfo
-            symbols: if symbols then symbols else []
-          resolve @buildResults(editor.nimSuggestCache.symbols, prefixInfo)
+        executor.execute editor, CommandTypes.SUGGEST, (err, symbols) =>
+          if err
+            resolve empty
+          else
+            editor.nimSuggestCache =
+              prefixInfo: prefixInfo
+              symbols: if symbols then symbols else []
+            resolve @buildResults(editor.nimSuggestCache.symbols, prefixInfo)
       else
         resolve empty

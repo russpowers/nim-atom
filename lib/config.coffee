@@ -20,7 +20,7 @@ module.exports =
   onTheFlyChecking:
     type: 'boolean'
     default: false
-    description: 'Enables live file-level eror checking.  If this is disabled, files will only be checked for errors on save.  You must restart Atom for this to take effect.'
+    description: '<b>Note: This is broken for any projects comprised of more than one file.</b>  It enables live file-level eror checking.  If this is disabled, files will only be checked for errors on save.  You must restart Atom for this to take effect.'
     order: 4
 
   autocomplete:

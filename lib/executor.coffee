@@ -1,5 +1,6 @@
 {CommandTypes, NimSymbolsTypes} = require './constants'
 KnownFiles = require './known-files'
+CompilerErrorsParser = require './compiler-errors-parser'
 
 prettifyDocStr = (str) ->
   replaced = str.replace /\\x([0-9A-F]{2})/g, (match, hex) ->
@@ -11,9 +12,10 @@ prettifyDocStr = (str) ->
 class Executor
   constructor: (@projectManager) ->
     @commandQueue = []
+    @compilerErrorsParser = new CompilerErrorsParser()
 
   parseSuggest: (lines) ->
-    for ln in lines
+    result = for ln in lines
       datums = ln.split "\t"
       continue unless datums.length >= 8
       [type, symbolType, name, sig, path, line, col, docs] = datums
@@ -36,6 +38,10 @@ class Executor
 
       item
 
+    return {
+      result: result
+    }
+
   parseDefinition: (lines) ->
     return if lines.length < 1
     firstMatch = lines[0]
@@ -51,34 +57,54 @@ class Executor
       line: parseInt(line)
       col: parseInt(col)
       docs: docs
-    item
+    return {
+      result: item
+    }
 
-  doCommand: (cmd, cb) ->
+  doError: (cmd, err) ->
+    atom.notifications.addError "Nim: Error executing command: #{cmd.type}",
+      detail: "Details dumped to developer console.  Go to View -> Developer -> Toggle Developer Tools and open the Console to view."
+    console.log err
+    @currentCommand = null
+    cmd.cb err
+    return
+
+  handleParseResult: (cmd, parsedData) ->
+    data = parseFn lines
+    
+
+  doCommand: (cmd) ->
     @currentCommand = cmd
-    cmd.project.caas.sendCommand cmd, (err, lines) =>
+    cmd.project.sendCommand cmd, (err, result) =>
       # Handle this better
-      if err?
-        atom.notifications.addError "Nim: Error executing command: #{cmd.type}",
-          detail: "Details dumped to developer console.  Go to View -> Developer -> Toggle Developer Tools and open the Console to view."
-        console.log err
-        @currentCommand = null
-        return
+      return @doError(cmd, err) if err?
 
-      if cmd.type == CommandTypes.LINT
-        cb @parseLint(lines)
-      else if cmd.type == CommandTypes.SUGGEST
-        cb @parseSuggest(lines)
-      else if cmd.type == CommandTypes.DEFINITION
-        cb @parseDefinition(lines)
-      else if cmd.type == CommandTypes.CONTEXT
-        cb @parseContext(lines)
-      else if cmd.type == CommandTypes.USAGE
-        cb @parseUsage(lines)
+      parsedResult = if cmd.type == CommandTypes.BUILD
+          res = @compilerErrorsParser.parse(cmd.filePath, result.lines)
+          res.code = result.code
+          res
+        else if cmd.type == CommandTypes.LINT 
+          @compilerErrorsParser.parse(cmd.filePath, result.lines)
+        else if cmd.type == CommandTypes.BUILD
+          @compilerErrorsParser.parse(result)
+        else if cmd.type == CommandTypes.SUGGEST
+          @parseSuggest(result)
+        else if cmd.type == CommandTypes.DEFINITION
+          @parseDefinition(result)
+        else if cmd.type == CommandTypes.CONTEXT
+          @parseContext(result)
+        else if cmd.type == CommandTypes.USAGE
+          @parseUsage(result)
+
+      if parsedResult.err?
+        @doError cmd, data.err
+      else
+        cmd.cb null, parsedResult.result
 
       if @commandQueue.length > 0
         next = @commandQueue.shift()
         cb = () => 
-          @doCommand next.cmd, next.cb
+          @doCommand next
         setTimeout cb, 0
       else
         @currentCommand = null
@@ -92,6 +118,7 @@ class Executor
     cmd.col = cursor.column+1
     cmd.row = cursor.row+1
     cmd.filePath = editor.getPath()
+    cmd.cb = cb
     if editor.nimProject?
       cmd.project = editor.nimProject
     else
@@ -100,10 +127,8 @@ class Executor
 
     # Make sure only one command executes at a time
     if @currentCommand?
-      @commandQueue.push
-        cmd: cmd
-        cb: cb
+      @commandQueue.push cmd
     else
-      @doCommand cmd, cb
+      @doCommand cmd
 
 module.exports = Executor

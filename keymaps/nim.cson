@@ -1,3 +1,5 @@
 ".editor":
   "alt-g": "nim:goto-definition"
+  "f5": "nim:run"
+  "ctrl-shift-b": "nim:build"
 

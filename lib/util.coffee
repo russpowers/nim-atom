@@ -10,6 +10,7 @@ module.exports =
   separateLines: (data) -> data.split "\n"
   separateSpaces: (data) -> data.trim().split ' '
   prettyPrint: (obj) ->
+    console.log obj
     JSON.stringify(obj, null, '  ')
   hasExt: (pathstr, ext) ->
     return false if not pathstr?

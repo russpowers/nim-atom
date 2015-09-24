@@ -33,7 +33,8 @@ class Caas
       message = if error? 
           error.toString()
         else
-          "ERROR: Command failed multiple times.\nCommand:\n#{prettyPrint(@currentCmd)}\nOutput:\n#{@output.join('\n')}"
+          printedCmd = "#{@currentCmd.type}: #{@currentCmd.filePath},#{@currentCmd.row},#{@currentCmd.col}"
+          "ERROR: Command failed multiple times.\nCommand:\n#{printedCmd}\nOutput:\n#{@output.join('\n')}"
       @currentCb message
     else
       cb = () => @doCommandInternal @currentCmd
