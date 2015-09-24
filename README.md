@@ -28,7 +28,7 @@ Use `File` -> `Open Folder` to open the root folder for a Nim project.  You shou
 If you don't have a main project file, that's ok, but it won't use Nimsuggest, which means that autocomplete and jump-to-definition will be slower.  Also, it means that .nim.cfg settings will not propagate to included files.  And maybe other bad stuff.
 
 ## Autocomplete
-Shows up after you press period.  Supports fuzzy matching by using fuzzaldrin.  Doc strings are truncated to fit into one line, mouseover to read the whole thing.
+Now works for all symbols, not just after you press dot.  Supports fuzzy matching by using fuzzaldrin.  Doc strings are truncated to fit into one line, mouseover to read the whole thing.  Can be configured in settings to be on all the time, only after you press dot, or never.
 
 ## Linting/Error Checking
 By default, it will check files when you save them.  You can also use on-the-fly checking by changing the value in settings.  This will slow things down.
