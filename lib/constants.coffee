@@ -23,3 +23,7 @@ module.exports =
     CONTEXT: 'INVOCATION_CONTEXT'
     USAGE: 'SYMBOL_USAGES'
     LINT: 'LINT'
+  AutoCompleteOptions:
+    ALWAYS: 'ALWAYS'
+    AFTERDOT: 'AFTERDOT'
+    NEVER: 'NEVER'

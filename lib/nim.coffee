@@ -5,7 +5,7 @@ Linter = require './linter'
 AutoCompleter = require './auto-completer'
 ProjectManager = require './project-manager'
 Executor = require './executor'
-{CommandTypes} = require './constants'
+{CommandTypes, AutoCompleteOptions} = require './constants'
 {hasExt, arrayEqual, separateSpaces, debounce} = require './util'
 
 checkForExecutable = (executablePath, cb) ->
@@ -147,6 +147,14 @@ module.exports =
     @subscriptions.add atom.config.observe 'nim.useCtrlShiftClickToJumpToDefinition', (enabled) =>
       @options.ctrlShiftClickEnabled = enabled
 
+    @subscriptions.add atom.config.observe 'nim.autocomplete', (value) =>
+      @options.autocomplete = if value == 'Always'
+        AutoCompleteOptions.ALWAYS
+      else if value == 'Only after dot'
+        AutoCompleteOptions.AFTERDOT
+      else if value == 'Never'
+        AutoCompleteOptions.NEVER
+
     @subscriptions.add atom.config.onDidChange 'nim.projectFilenames', (filenames) =>
       @options.rootFilenames = separateSpaces filenames.newValue
       updateProjectManagerDebounced()
@@ -182,4 +190,4 @@ module.exports =
 
   nimLinter: -> Linter @options
 
-  nimAutoComplete: -> AutoCompleter @executor
+  nimAutoComplete: -> AutoCompleter @executor, @options
