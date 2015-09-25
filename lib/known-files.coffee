@@ -35,7 +35,7 @@ findFile = (fullPath) ->
         break
 
     if found == false
-      throw new Error("Could not find file #{fullPath}, ")
+      throw new Error("Could not find file #{fullPath}, #{foundPath}")
 
   return foundPath
 

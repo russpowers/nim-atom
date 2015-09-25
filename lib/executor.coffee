@@ -43,10 +43,10 @@ class Executor
     }
 
   parseDefinition: (lines) ->
-    return if lines.length < 1
+    return {} if lines.length < 1
     firstMatch = lines[0]
     datums = firstMatch.split "\t"
-    return unless datums.length >= 8
+    return {} unless datums.length >= 8
     [type, symbolType, name, sig, path, line, col, docs] = datums
     item =
       type: type

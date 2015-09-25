@@ -6,12 +6,7 @@ matchTemplate = (line) ->
     \((\d+), \s (\d+)\) \s template/generic \s instantiation \s from \s here///
 
 matchWarningErrorHint = (line) ->
-  line.match ///
-    ^(.+) # path 
-    \((\d+), \s (\d+)\) # line and column
-    \s (Warning|Error|Hint): \s
-    (.*) # message
-    ///
+  line.match /^(.+?\.nim)\((\d+),\s(\d+)\)\s(Warning|Error|Hint):\s(.*)/
 
 matchInternalError = (line) ->
   line.match /// Error:\sinternal\serror: ///
@@ -36,7 +31,9 @@ processLine = (filePath, line, state) ->
   wehMatch = matchWarningErrorHint line
   
   if wehMatch
+    console.log line
     [_, sourcePath, line, col, type, msg] = wehMatch
+    console.log sourcePath, "...", line, col, type, msg
     sourcePath = if sourcePath.endsWith 'stdinfile.nim' then filePath else KnownFiles.getCanonical(sourcePath)
     if type == 'Hint' then type = 'Info'
     line = line - 1 # convert to number
