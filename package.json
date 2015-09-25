@@ -28,6 +28,13 @@
       }
     }
   },
+  "consumedServices": {
+    "linter-plus-self": {
+      "versions": {
+        "0.1.0": "consumeLinter"
+      }
+    }
+  },
   "dependencies": {
     "fuzzaldrin": "^2.1.0",
     "sub-atom": "^1.1.0",

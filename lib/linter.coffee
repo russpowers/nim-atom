@@ -6,7 +6,7 @@ path = require 'path'
 
 module.exports = (executor, options) ->
   grammarScopes: ['source.nim']
-  scope: 'file'
+  scope: 'project'
   lintOnFly: options.lintOnFly
   lint: (editor) ->
     return new Promise (resolve, reject) ->

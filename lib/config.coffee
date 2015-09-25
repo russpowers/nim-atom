@@ -40,3 +40,20 @@ module.exports =
     default: '<nimble>.nim proj.nim <parent>.nim'
     description: 'Any filename that will be automatically used as the project file if found in the root of an opened folder.  The first matching filename in the opened folder will be used.  &lt;parent&gt; will substitute the parent folder\'s name.  &lt;nimble&gt; will substitute the nimble package\'s name.'
     order: 7
+
+  autosaveBeforeBuild:
+    type: 'string'
+    default: 'Save all files'
+    enum: ['Save all files', 'Save current file', "Don't save any files"]
+    order: 8
+
+  runCommand:
+    type: 'string'
+    default: ''
+    description: """ The command to execute to run projects.  This command should open a command prompt window and can use the variables &lt;bin&gt; and &lt;binpath&gt;.<br />Examples:<br />
+      <b>Windows:</b> start &lt;bin&gt;<br/>
+      <b>OSX:</b> open -a Terminal "backtick&lt;bin&gt;backtick" (Use backticks, I can't figure out how to write them in this field)<br/> 
+      <b>Linux (gnome):</b> gnome-terminal -e "&lt;bin&gt;"<br/>
+      If you have more, please let me know..
+      """
+    order: 9

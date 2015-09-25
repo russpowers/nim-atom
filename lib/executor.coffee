@@ -81,7 +81,9 @@ class Executor
 
       parsedResult = if cmd.type == CommandTypes.BUILD
           res = @compilerErrorsParser.parse(cmd.filePath, result.lines)
-          res.code = result.code
+          res.extra = 
+            code: result.code
+            filePath: cmd.filePath
           res
         else if cmd.type == CommandTypes.LINT 
           @compilerErrorsParser.parse(cmd.filePath, result.lines)
@@ -99,7 +101,7 @@ class Executor
       if parsedResult.err?
         @doError cmd, data.err
       else
-        cmd.cb null, parsedResult.result
+        cmd.cb null, parsedResult.result, parsedResult.extra
 
       if @commandQueue.length > 0
         next = @commandQueue.shift()

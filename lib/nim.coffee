@@ -5,11 +5,9 @@ Linter = require './linter'
 AutoCompleter = require './auto-completer'
 ProjectManager = require './project-manager'
 Executor = require './executor'
+Runner = require './runner'
 {CommandTypes, AutoCompleteOptions} = require './constants'
 {hasExt, arrayEqual, separateSpaces, debounce} = require './util'
-cp = require "child_process"
-shell = require 'shell'
-#process.exit(0);
 
 checkForExecutable = (executablePath, cb) ->
   if executablePath != ''
@@ -97,10 +95,6 @@ module.exports =
           done()
 
   activate: (state) ->
-    #shell.openItem 'd:\\nimtest\\run.bat'
-    #cp.exec 'cmd /k /s d:\\nimtest\\run.bat',
-    #  cwd: 'd:\\nimtest'
-
     @options =
       rootFilenames: separateSpaces(atom.config.get 'nim.projectFilenames')
       nimSuggestExe: fixExecutableFilename(atom.config.get('nim.nimsuggestExecutablePath') or 'nimsuggest')
@@ -108,28 +102,92 @@ module.exports =
       nimSuggestEnabled: atom.config.get 'nim.nimsuggestEnabled'
       lintOnFly: atom.config.get 'nim.onTheFlyChecking'
 
+    @runner = new Runner()
     @projectManager = new ProjectManager()
     @executor = new Executor @projectManager
     @checkForExes => 
       require('atom-package-deps').install('nim', true)
         .then => @activateAfterChecks(state)
         
+  save: (editor, cb) ->
+    if editor.isModified()
+      console.log 'heee'
+      disposable = editor.buffer.onDidSave ->
+        disposable.dispose()
+        cb()
+      editor.save()
+    else
+      cb()
+
+  saveAllModified: (cb) ->
+    savedCount = 0
+    count = 0
+    for editor in atom.workspace.getTextEditors()
+      if editor.isModified()
+        count += 1
+
+    if count == 0
+      cb()
+
+    for editor in atom.workspace.getTextEditors()
+      if editor.isModified()
+        @save editor, ->
+          console.log 'saved'
+          savedCount += 1
+          if savedCount == count
+            cb()
+
+    null
 
   gotoDefinition: (editor) ->
     @executor.execute editor, CommandTypes.DEFINITION, (err, data) ->
       if not err? and data?
         navigateToFile data.path, data.line, data.col, editor
 
+  run: (editor, cb) ->
+    runCmd = atom.config.get 'nim.runCommand'
+    if runCmd == ''
+      return atom.notifications.addError "Run Command not specified, please check nim package settings"
+
+    @build editor, (success) =>
+      if not success
+        cb("Build failed.") if cb?
+        return
+        
+      project = editor.nimProject
+      newRunCmd = runCmd
+        .replace('<bin>', project.binFilePath)
+        .replace('<binpath>', project.binFolderPath)
+      @runner.run newRunCmd
+
   build: (editor, cb) ->
-    @executor.execute editor, CommandTypes.BUILD, (err, result) ->
-      if err?
-        cb(false) if cb?
-      else if result.code != 0
-        atom.notifications.addError "Build failed."
-        cb(false) if cb?
-      else
-        atom.notifications.addSuccess "Build succeeded."
-        cb(true) if cb?
+    atom.notifications.addInfo "Build started.."
+
+    afterSaves = =>
+      @executor.execute editor, CommandTypes.BUILD, (err, result, extra) =>
+        if err?
+          cb("Build failed") if cb?
+        else if extra.code != 0
+          console.log result
+          console.log @linterApi.getLinters()
+          @linterApi.setMessages(@linter, result)
+          atom.notifications.addError "Build failed.",
+            detail: "Project root: #{extra.filePath}"
+          cb(false) if cb?
+        else
+          console.log result
+          console.log @linterApi.getLinters()
+          @linterApi.setMessages(@linter, result)
+          atom.notifications.addSuccess "Build succeeded.",
+            detail: "Project root: #{extra.filePath}"
+          cb(true) if cb?
+
+    abb = atom.config.get 'nim.autosaveBeforeBuild'
+
+    if abb == 'Save all files'
+      @saveAllModified afterSaves
+    else if abb == 'Save current file'
+      @save editor, afterSaves
 
   activateAfterChecks: (state) ->
     @updateProjectManager()
@@ -146,7 +204,7 @@ module.exports =
       'nim:run': (ev) ->
         editor = @getModel()
         return if not editor
-        self.build editor
+        self.run editor
 
     atom.commands.add 'atom-text-editor',
       'nim:build': (ev) ->
@@ -219,6 +277,12 @@ module.exports =
     @subscriptions.dispose()
     @projectManager.destroy()
 
-  nimLinter: -> Linter @executor, @options
+  nimLinter: ->
+    console.log @
+    @linter = Linter @executor, @options
+    @linter
+
+  consumeLinter: (linterApi) ->
+    @linterApi = linterApi
 
   nimAutoComplete: -> AutoCompleter @executor, @options

@@ -3,7 +3,8 @@ path = require 'path'
 PersistentCaas = require './persistent-caas'
 OnDemandCaas = require './on-demand-caas'
 Compiler = require './compiler'
-{existsSync} = require './util'
+NimbleInfo = require './nimble-info'
+{existsSync, separateLines, removeExt} = require './util'
 {CommandTypes} = require './constants'
 
 findRootFilePath = (folderPath, rootFilenames) ->
@@ -26,14 +27,33 @@ findRootFilePath = (folderPath, rootFilenames) ->
 class Project
   constructor: (@folderPath, @options) ->
     @compiler = new Compiler @options
+    @detectInfo()
+
+  detectInfo: () ->  
     if not @folderPath?
-      @caas = new OnDemandCaas options
+      @caas = new OnDemandCaas @options
     else
-      @rootFilePath = findRootFilePath folderPath, options.rootFilenames
+      # First look to see if there's a .nimble file...
+      @nimbleInfo = new NimbleInfo(@folderPath)
+      if @nimbleInfo.hasNimbleFile
+        @rootFilePath = @nimbleInfo.rootFilePath
+        @binFilePath = @nimbleInfo.binFilePath
+      else
+        # No?  Ok, let's look around and see if we can find a source root anyways..
+        @rootFilePath = findRootFilePath @folderPath, @options.rootFilenames
+        if @rootFilePath?
+          @binFilePath = removeExt @rootFilePath
+
+      if @binFilePath?
+        @binFolderPath = path.basename(@binFilePath)
+
+      if @rootFilePath?
+        @rootFolderPath = path.basename(@rootFilePath)
+
       if @rootFilePath and @options.nimSuggestEnabled and @options.nimSuggestExists
-        @caas = new PersistentCaas folderPath, path.basename(@rootFilePath), options
+        @caas = new PersistentCaas @folderPath, @rootFolderPath, @options
       else if @options.nimExists
-        @caas = new OnDemandCaas options
+        @caas = new OnDemandCaas @options
 
   sendCommand: (cmd, cb) ->
     if cmd.type == CommandTypes.LINT

@@ -19,6 +19,7 @@ class Compiler
     @execute path.dirname(filePath), args, null, cb
 
   execute: (cwd, args, fileText, cb) ->
+    console.log args
     if not @options.nimExists
       return cb "Could not find nim executable, please check nim package settings"
 

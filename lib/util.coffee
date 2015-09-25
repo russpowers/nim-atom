@@ -15,6 +15,8 @@ module.exports =
   hasExt: (pathstr, ext) ->
     return false if not pathstr?
     pathstr.endsWith ext
+  removeExt: (pathstr) ->
+    pathstr.replace(/\.[^\\\/.]+$/, "")
   isDirectory: (pathstr) ->
     try
       return fs.lstatSync(pathstr).isDirectory()

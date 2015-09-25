@@ -32,6 +32,7 @@ class ProjectManager
     projectFolders = projectPaths.filter isDirectory
     @projects = for projectPath in projectFolders
       new Project(projectPath, options)
+    console.log @projects
 
 
 module.exports = ProjectManager
