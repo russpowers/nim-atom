@@ -85,10 +85,8 @@ class Executor
             code: result.code
             filePath: cmd.filePath
           res
-        else if cmd.type == CommandTypes.LINT 
+        else if cmd.type == CommandTypes.LINT
           @compilerErrorsParser.parse(cmd.filePath, result.lines)
-        else if cmd.type == CommandTypes.BUILD
-          @compilerErrorsParser.parse(result)
         else if cmd.type == CommandTypes.SUGGEST
           @parseSuggest(result)
         else if cmd.type == CommandTypes.DEFINITION

@@ -8,18 +8,19 @@ class Compiler
 
   check: (filePath, fileText, cb) ->
     args = ["check", "--listFullPaths", "--colors:off", "--verbosity:0", if fileText? then '-' else filePath]
-    args = args.concat @options.checkArgs
+    if @options.checkArgs?
+      args = args.concat @options.checkArgs
 
     @execute path.dirname(filePath), args, fileText, cb
 
   build: (filePath, cb) ->
     args = ["c", "--listFullPaths", "--colors:off", "--verbosity:0", filePath]
-    args = args.concat @options.compileArgs
+    if @options.compileArgs?
+      args = args.concat @options.compileArgs
 
     @execute path.dirname(filePath), args, null, cb
 
   execute: (cwd, args, fileText, cb) ->
-    console.log args
     if not @options.nimExists
       return cb "Could not find nim executable, please check nim package settings"
 

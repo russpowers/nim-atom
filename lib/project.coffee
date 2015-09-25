@@ -45,27 +45,32 @@ class Project
           @binFilePath = removeExt @rootFilePath
 
       if @binFilePath?
-        @binFolderPath = path.basename(@binFilePath)
+        @binFolderPath = path.dirname(@binFilePath)
 
       if @rootFilePath?
-        @rootFolderPath = path.basename(@rootFilePath)
+        @rootFolderPath = path.dirname(@rootFilePath)
 
       if @rootFilePath and @options.nimSuggestEnabled and @options.nimSuggestExists
-        @caas = new PersistentCaas @folderPath, @rootFolderPath, @options
+        @caas = new PersistentCaas @folderPath, @rootFilePath, @options
       else if @options.nimExists
         @caas = new OnDemandCaas @options
 
   sendCommand: (cmd, cb) ->
     if cmd.type == CommandTypes.LINT
       # Build the root, if it's available and the file is saved
+
       if @rootFilePath? and not cmd.dirtyFileData?
-        cmd.filePath = @rootFilePath
-      @compiler.check cmd.filePath, cmd.dirtyFileData, cb
+        cmd.compiledPath = @rootFilePath
+      else
+        cmd.compiledPath = cmd.filePath
+      @compiler.check cmd.compiledPath, cmd.dirtyFileData, cb
     else if cmd.type == CommandTypes.BUILD
       # Build the root, if it's available
       if @rootFilePath?
-        cmd.filePath = @rootFilePath
-      @compiler.build cmd.filePath, cb
+        cmd.compiledPath = @rootFilePath
+      else
+        cmd.compiledPath = cmd.filePath
+      @compiler.build cmd.compiledPath, cb
     else if @caas?
       @caas.sendCommand cmd, cb
     else

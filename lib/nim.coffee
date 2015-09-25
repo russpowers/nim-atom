@@ -111,7 +111,6 @@ module.exports =
         
   save: (editor, cb) ->
     if editor.isModified()
-      console.log 'heee'
       disposable = editor.buffer.onDidSave ->
         disposable.dispose()
         cb()
@@ -132,7 +131,6 @@ module.exports =
     for editor in atom.workspace.getTextEditors()
       if editor.isModified()
         @save editor, ->
-          console.log 'saved'
           savedCount += 1
           if savedCount == count
             cb()
@@ -168,15 +166,11 @@ module.exports =
         if err?
           cb("Build failed") if cb?
         else if extra.code != 0
-          console.log result
-          console.log @linterApi.getLinters()
           @linterApi.setMessages(@linter, result)
           atom.notifications.addError "Build failed.",
             detail: "Project root: #{extra.filePath}"
           cb(false) if cb?
         else
-          console.log result
-          console.log @linterApi.getLinters()
           @linterApi.setMessages(@linter, result)
           atom.notifications.addSuccess "Build succeeded.",
             detail: "Project root: #{extra.filePath}"
@@ -278,7 +272,6 @@ module.exports =
     @projectManager.destroy()
 
   nimLinter: ->
-    console.log @
     @linter = Linter @executor, @options
     @linter
 

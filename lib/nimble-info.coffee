@@ -18,7 +18,6 @@ getNimbleDict = (folderPath) ->
   files = fs.readdirSync folderPath
   nimbleFiles = files.filter (x) -> path.extname(x) == '.nimble' and path.basename(x) != '.nimble'
   if nimbleFiles.length # Just do the first, there shouldn't be more than one
-    console.log nimbleFiles
     nimbleFilePath = path.join(folderPath, nimbleFiles[0])
     return [readNimbleData(nimbleFilePath), nimbleFilePath]
   else
