@@ -17,7 +17,7 @@ processLine = (filePath, line, state) ->
   if templateMatch
     [_, sourcePath, line, col] = templateMatch
     sourcePath = if sourcePath.endsWith 'stdinfile.nim' then filePath else KnownFiles.getCanonical(sourcePath)
-    msg = "#{sourcePath} (#{line}, #{col}) template/generic instantiation from here"
+    msg = "template/generic instantiation from here"
     line = parseInt(line) - 1
     col  = parseInt(col) - 1
 
