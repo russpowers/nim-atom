@@ -23,26 +23,24 @@ processLine = (filePath, line, state) ->
     else
       state.fullMsgInfo =
         msg: msg
-        line: line - 1
-        col: col - 1
+        line: parseInt(line)
+        col: parseInt(col)
         filePath: sourcePath
     return
 
   wehMatch = matchWarningErrorHint line
   
   if wehMatch
-    console.log line
     [_, sourcePath, line, col, type, msg] = wehMatch
-    console.log sourcePath, "...", line, col, type, msg
     sourcePath = if sourcePath.endsWith 'stdinfile.nim' then filePath else KnownFiles.getCanonical(sourcePath)
     if type == 'Hint' then type = 'Info'
-    line = line - 1 # convert to number
-    col  = col - 1
+    line = parseInt(line)
+    col  = parseInt(col)
 
     if state.fullMsgInfo
+      msg = state.fullMsgInfo.msg + '<br />' + "#{sourcePath} (#{line}, #{col}) " + msg
       col = state.fullMsgInfo.col
       line = state.fullMsgInfo.line
-      msg = state.fullMsgInfo.msg + '<br />' + "#{sourcePath} (#{line}, #{col}) " + msg
       sourcePath = state.fullMsgInfo.filePath
       state.fullMsgInfo = null
  
@@ -50,7 +48,7 @@ processLine = (filePath, line, state) ->
       filePath: sourcePath
       type: type
       html: msg
-      range: [[line, col],[line, col+1]]
+      range: [[line-1, col-1],[line-1, col]] # Single character in 0-based Atom units
     }
 
   internalErrorMatch = matchInternalError line
