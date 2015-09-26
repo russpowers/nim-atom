@@ -18,14 +18,18 @@ processLine = (filePath, line, state) ->
     [_, sourcePath, line, col] = templateMatch
     sourcePath = if sourcePath.endsWith 'stdinfile.nim' then filePath else KnownFiles.getCanonical(sourcePath)
     msg = "#{sourcePath} (#{line}, #{col}) template/generic instantiation from here"
-    if state.fullMsgInfo
-      state.fullMsgInfo.msg = state.fullMsgInfo.msg + '<br />' + msg
-    else
-      state.fullMsgInfo =
-        msg: msg
-        line: parseInt(line)
-        col: parseInt(col)
-        filePath: sourcePath
+    line = parseInt(line) - 1
+    col  = parseInt(col) - 1
+
+    if not state.trace?
+      state.trace = []
+
+    state.trace.push
+      filePath: sourcePath
+      type: "Trace"
+      text: msg
+      range: [[line, col],[line, col+1]]
+        
     return
 
   wehMatch = matchWarningErrorHint line
@@ -34,22 +38,21 @@ processLine = (filePath, line, state) ->
     [_, sourcePath, line, col, type, msg] = wehMatch
     sourcePath = if sourcePath.endsWith 'stdinfile.nim' then filePath else KnownFiles.getCanonical(sourcePath)
     if type == 'Hint' then type = 'Info'
-    line = parseInt(line)
-    col  = parseInt(col)
+    line = parseInt(line) - 1
+    col  = parseInt(col) - 1
 
-    if state.fullMsgInfo
-      msg = state.fullMsgInfo.msg + '<br />' + "#{sourcePath} (#{line}, #{col}) " + msg
-      col = state.fullMsgInfo.col
-      line = state.fullMsgInfo.line
-      sourcePath = state.fullMsgInfo.filePath
-      state.fullMsgInfo = null
- 
-    return {
+    item =
       filePath: sourcePath
       type: type
-      html: msg
-      range: [[line-1, col-1],[line-1, col]] # Single character in 0-based Atom units
-    }
+      text: msg
+      range: [[line, col],[line, col+1]]
+
+    if state.trace?
+      item.trace = state.trace.slice().reverse()
+      state.trace.length = 0
+
+    return item
+    
 
   internalErrorMatch = matchInternalError line
 
