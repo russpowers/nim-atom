@@ -41,6 +41,16 @@ Use Ctrl + Shift + Left Click to jump to the definition under the mouse cursor.
 ## Notes
 Sometimes the nim compiler or nimsuggest crashes, and you'll see the error notification.  It's not a big deal, and nimsuggest will auto-restart.  You can view full error dumps in the developer tools console (`Ctrl`-`Alt`-`i` or `Ctrl`-`Shift`-`i`).  This can be annoying when doing on-the-fly error checking, so it is disabled by default.
 
+## Development
+If you want to hack on this package, just:
+1. Be sure you have node.js installed (I think Atom installs this, not sure)
+2. Clone this repo
+3. Be sure this package is not installed in Atom (uninstall if necessary)
+4. `apm install` in repo root
+5. `apm link` in repo root
+
+Now you can edit the source directly in your repo clone and it will update any time you restart Atom.
+
 ## Credit
 
 This originally started as a fork of https://github.com/zah/nim.atom/, but it has changed so much that I just created a new project.
