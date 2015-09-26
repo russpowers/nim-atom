@@ -77,7 +77,7 @@ patterns: [
   }
   {
     comment: "Keyword boolean operators for expressions."
-    name: "keyword.operator.boolean.nim"
+    name: "keyword" # Used to be "keyword.operator.boolean.nim", but most atom themes expect operators like || and won't highlight
     match: "(\\b(and|in|is|isnot|not|notin|or|xor)\\b)"
   }
   {
