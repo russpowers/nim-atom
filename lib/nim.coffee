@@ -155,12 +155,14 @@ module.exports =
         return
         
       project = editor.nimProject
+      filePath = editor.getPath()
+
       newRunCmd = runCmd
-        .replace('<bin>', project.binFilePath)
-        .replace('<binpath>', project.binFolderPath)
-      @statusBarView?.showInfo("Nim run started", 0)
-      @runner.run newRunCmd, =>
-        @statusBarView?.showInfo("Nim run finished")
+        .replace('<bin>', project.getBinFilePathFor(filePath))
+        .replace('<binpath>', project.getBinFolderPathFor(filePath))
+
+      @statusBarView?.showInfo "Nim run started"
+      @runner.run newRunCmd
 
   build: (editor, cb) ->
     @statusBarView?.showInfo("Nim build started", 0)

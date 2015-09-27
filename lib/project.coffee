@@ -55,15 +55,12 @@ class Project
       if @nimbleInfo.hasNimbleFile
         @rootFilePath = @nimbleInfo.rootFilePath
         @binFilePath = @nimbleInfo.binFilePath
-        if @rootFilePath?
-          console.log "Found from nimble #{@rootFilePath}"
       
       # No root found in .nimble? Or no .nimble?  Ok, let's try to find .nim matching
       # the standard extensions
       if not @rootFilePath?
         @rootFilePath = findSameNamedNim @folderPath, ['.nimcfg', '.nim.cfg', '.nims']
         if @rootFilePath?
-          console.log "Found from extension #{@rootFilePath}"
           @binFilePath = removeExt @rootFilePath
 
       if @binFilePath?
@@ -78,13 +75,24 @@ class Project
           # We'd like to use nimsuggest even though there isn't a project, so try guessing..
           guessedProjectFile = guessRootFilePath @folderPath, ['<nimble>.nim', 'proj.nim', '<parent>.nim']
           if guessedProjectFile?
-            console.log "Guessed #{guessedProjectFile}"
             @caas = new PersistentCaas @folderPath, guessedProjectFile, @options
           else
-            console.log "No project file found"
             @caas = new OnDemandCaas @options
       else if @options.nimExists
         @caas = new OnDemandCaas @options
+
+  getBinFilePathFor: (filePath) ->
+    if @binFilePath? then @binFilePath else removeExt(filePath)
+
+  getBinFolderPathFor: (filePath) ->
+    if @binFolderPath? then @binFolderPath else path.dirname(filePath)
+
+  getRootFilePathFor: (filePath) ->
+    if @rootFilePath? then @rootFilePath else filePath
+
+  getRootFolderPathFor: (filePath) ->
+    if @rootFolderPath? then @rootFolderPath else path.dirname(filePath)
+
 
   sendCommand: (cmd, cb) ->
     if cmd.type == CommandTypes.LINT
