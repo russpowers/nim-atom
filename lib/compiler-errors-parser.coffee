@@ -6,7 +6,7 @@ matchTemplate = (line) ->
     \((\d+), \s (\d+)\) \s template/generic \s instantiation \s from \s here///
 
 matchWarningErrorHint = (line) ->
-  line.match /^(.+?\.nim)\((\d+),\s(\d+)\)\s(Warning|Error|Hint):\s(.*)/
+  line.match /^(.+?\.nims?)\((\d+),\s(\d+)\)\s(Warning|Error|Hint):\s(.*)/
 
 matchInternalError = (line) ->
   line.match /// Error:\sinternal\serror: ///
