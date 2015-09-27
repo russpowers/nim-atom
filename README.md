@@ -43,6 +43,7 @@ Sometimes the nim compiler or nimsuggest crashes, and you'll see the error notif
 
 ## Development
 If you want to hack on this package, just:
+
 1. Be sure you have node.js installed (I think Atom installs this, not sure)
 2. Clone this repo
 3. Be sure this package is not installed in Atom (uninstall if necessary)
