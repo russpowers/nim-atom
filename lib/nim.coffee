@@ -6,8 +6,11 @@ AutoCompleter = require './auto-completer'
 ProjectManager = require './project-manager'
 Executor = require './executor'
 Runner = require './runner'
+NimStatusBarView = require './nim-status-bar-view'
 {CommandTypes, AutoCompleteOptions} = require './constants'
 {hasExt, arrayEqual, separateSpaces, debounce} = require './util'
+
+
 
 checkForExecutable = (executablePath, cb) ->
   if executablePath != ''
@@ -96,13 +99,12 @@ module.exports =
 
   activate: (state) ->
     @options =
-      rootFilenames: separateSpaces(atom.config.get 'nim.projectFilenames')
       nimSuggestExe: fixExecutableFilename(atom.config.get('nim.nimsuggestExecutablePath') or 'nimsuggest')
       nimExe: fixExecutableFilename(atom.config.get('nim.nimExecutablePath') or 'nim')
       nimSuggestEnabled: atom.config.get 'nim.nimsuggestEnabled'
       lintOnFly: atom.config.get 'nim.onTheFlyChecking'
 
-    @runner = new Runner()
+    @runner = new Runner(() => @statusBarView)
     @projectManager = new ProjectManager()
     @executor = new Executor @projectManager
     @checkForExes => 
@@ -156,32 +158,40 @@ module.exports =
       newRunCmd = runCmd
         .replace('<bin>', project.binFilePath)
         .replace('<binpath>', project.binFolderPath)
-      @runner.run newRunCmd
+      @statusBarView?.showInfo("Nim run started", 0)
+      @runner.run newRunCmd, =>
+        @statusBarView?.showInfo("Nim run finished")
 
   build: (editor, cb) ->
-    atom.notifications.addInfo "Build started.."
+    @statusBarView?.showInfo("Nim build started", 0)
+    #atom.notifications.addInfo "Build started.."
 
-    afterSaves = =>
-      @executor.execute editor, CommandTypes.BUILD, (err, result, extra) =>
-        if err?
-          cb("Build failed") if cb?
-        else if extra.code != 0
-          @linterApi.setMessages(@linter, result)
-          atom.notifications.addError "Build failed.",
-            detail: "Project root: #{extra.filePath}"
-          cb(false) if cb?
-        else
-          @linterApi.setMessages(@linter, result)
-          atom.notifications.addSuccess "Build succeeded.",
-            detail: "Project root: #{extra.filePath}"
-          cb(true) if cb?
+    @runner.waitUntilFinished =>
+      afterSaves = =>
+        @executor.execute editor, CommandTypes.BUILD, (err, result, extra) =>
+          if err?
+            @statusBarView?.showError("Nim build failed")
+            cb("Build failed") if cb?
+          else if extra.code != 0
+            @linterApi.setMessages(@linter, result)
+            @statusBarView?.showError("Nim build failed")
+            # atom.notifications.addError "Build failed.",
+            #   detail: "Project root: #{extra.filePath}"
+            cb(false) if cb?
+          else
+            @linterApi.setMessages(@linter, result)
+            @statusBarView?.showSuccess("Nim build succeeded")
+            # atom.notifications.addSuccess "Build succeeded.",
+            #   detail: "Project root: #{extra.filePath}"
+            #   dismissable: true
+            cb(true) if cb?
 
-    abb = atom.config.get 'nim.autosaveBeforeBuild'
+      abb = atom.config.get 'nim.autosaveBeforeBuild'
 
-    if abb == 'Save all files'
-      @saveAllModified afterSaves
-    else if abb == 'Save current file'
-      @save editor, afterSaves
+      if abb == 'Save all files'
+        @saveAllModified afterSaves
+      else if abb == 'Save current file'
+        @save editor, afterSaves
 
   activateAfterChecks: (state) ->
     @updateProjectManager()
@@ -238,10 +248,6 @@ module.exports =
       else if value == 'Never'
         AutoCompleteOptions.NEVER
 
-    @subscriptions.add atom.config.onDidChange 'nim.projectFilenames', (filenames) =>
-      @options.rootFilenames = separateSpaces filenames.newValue
-      updateProjectManagerDebounced()
-
     @subscriptions.add atom.project.onDidChangePaths (paths) =>
       if not arrayEqual paths, @projectManager.projectPaths
         @updateProjectManager()
@@ -270,6 +276,8 @@ module.exports =
   deactivate: ->
     @subscriptions.dispose()
     @projectManager.destroy()
+    @statusBarView?.destroy()
+    @statusBarTile?.destroy()
 
   nimLinter: ->
     @linter = Linter @executor, @options
@@ -277,5 +285,10 @@ module.exports =
 
   consumeLinter: (linterApi) ->
     @linterApi = linterApi
+
+  consumeStatusBar: (statusBar) ->
+    @statusBarView = new NimStatusBarView()
+    @statusBarView.init 5000
+    @statusBarTile = statusBar.addRightTile(item: @statusBarView, priority: 50)
 
   nimAutoComplete: -> AutoCompleter @executor, @options

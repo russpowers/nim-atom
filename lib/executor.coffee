@@ -62,8 +62,9 @@ class Executor
     }
 
   doError: (cmd, err) ->
-    atom.notifications.addError "Nim: Error executing command: #{cmd.type}",
-      detail: "Details dumped to developer console.  Go to View -> Developer -> Toggle Developer Tools and open the Console to view."
+    if cmd.type != CommandTypes.SUGGEST # This happens too much, don't broadcast it
+      atom.notifications.addError "Nim: Error executing command: #{cmd.type}",
+        detail: "Details dumped to developer console.  Go to View -> Developer -> Toggle Developer Tools and open the Console to view."
     console.log err
     @currentCommand = null
     cmd.cb err

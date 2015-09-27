@@ -19,19 +19,20 @@ This is an Atom package for the Nim language that integrates with the Nim compil
 2. If `nim` and/or `nimsuggest` are not in your PATH, then set the paths for them.
 
 ## How Projects Work
-Use `File` -> `Open Folder` to open the root folder for a Nim project.  You should have a main project file, which is autodetected in the following order:
+Use `File` -> `Open Folder` to open the root folder for a Nim project.  You should have a main project `.nim` file, which is autodetected using the following steps:
 
-1. The `.nim` file with the same name as the `.nimble` file in the root folder.  For example, if you have a `something.nimble`, it will use `something.nim` if found.
-2. `proj.nim`
-3. The `.nim` file with the same name as the root folder.  For example, if the opened folder is `C:\something`, it will use `C:\something\something.nim` if found.
+1. Check for a `.nimble` file in the root folder.  If found, use the `bin` and (optionally) `srcDir` keys to determine the project file (only the first `bin` key will be used if multiple exist).
+2. Find the first `.nim` file with a corresponding `.nimcfg`, `.nim.cfg`, or `.nims` file in the root folder.
 
-If you don't have a main project file, that's ok, but it won't use Nimsuggest, which means that autocomplete and jump-to-definition will be slower.  Also, it means that .nim.cfg settings will not propagate to included files.  And maybe other bad stuff.
+If you have a main project, it will speed up autocompletions and jump-to-definition.  *However, keep in mind that a file must be included or imported either directly or indirectly by the main project file to be error checked.*
 
 ## Autocomplete
 Now works for all symbols, not just after you press dot.  Supports fuzzy matching by using fuzzaldrin.  Doc strings are truncated to fit into one line, mouseover to read the whole thing.  Can be configured in settings to be on all the time, only after you press dot, or never.
 
 ## Linting/Error Checking
 By default, it will check files when you save them.  You can also use on-the-fly checking by changing the value in settings.  This will slow things down.
+
+Note that if you have a main project file, error checking only occurs for files directly or indirectly imported or included by the main project file.  So, if you don't see any errors and they should be there, be sure the file has been imported/included.
 
 If there are a lot of errors/warnings when linting, Atom will slow down a lot.  This is because it creates every error/warning box instead of reusing them.  There is a pending issue for this in the Atom Linter package.
 

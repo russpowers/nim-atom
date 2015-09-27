@@ -33,10 +33,10 @@ class NimbleInfo
     @hasNimbleFile = @data?
     @srcDir = path.join(@folderPath, @getFirst('srcDir') || '')
     @binDir = path.join(@folderPath, @getFirst('binDir') || '')
-    nimbleFilePathWithoutExt = if @nimbleFilePath then removeExt(path.basename(@nimbleFilePath)) else ''
-    @bin = @getFirst('bin') || nimbleFilePathWithoutExt
-    @rootFilePath = path.join(@srcDir, @bin) + '.nim'
-    @execFilePath = path.join(@binDir, @bin)
+    @bin = @getFirst('bin')
+    if @bin?
+      @rootFilePath = path.join(@srcDir, @bin) + '.nim'
+      @binFilePath = path.join(@binDir, @bin)
 
   get: (key) -> @data[key]
 

@@ -5,7 +5,7 @@ Caas = require './caas'
 {separateLines} = require './util'
 
 class PersistentCaas extends Caas
-  constructor: (@folderPath, @rootFilename, @options) ->
+  constructor: (@folderPath, @rootFilePath, @options) ->
     super()
     # Start Nimsuggest when project is opened, since sometimes it takes a few secs
     @ensureCaas()
@@ -62,7 +62,7 @@ class PersistentCaas extends Caas
     @initialLineCount = 0
     @process = new BufferedProcess
       command: @options.nimSuggestExe
-      args: ['--stdin', @rootFilename]
+      args: ['--stdin', @rootFilePath]
       options:
         cwd: @folderPath
       stdout: (data) => @processData data
