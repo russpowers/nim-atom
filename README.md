@@ -17,6 +17,12 @@ This is an Atom package for the Nim language that integrates with the Nim compil
 ## Configuration
 1. Go to the package settings in Atom: `File` -> `Settings` (or `Edit` -> `Preferences`) -> `Packages` -> `nim`
 2. If `nim` and/or `nimsuggest` are not in your PATH, then set the paths for them.
+3. (Optional) Set up the `Run Command` for your OS (at the bottom of the nim package settings, see instructions there).
+
+## Important input
+1. `Ctrl`-`Shift`-Click -> Jump to definition under cursor
+2. `Ctrl`-`Shift`-B -> Build current file or the project it belongs to
+2. `F5` -> Build and Run current file or the project it belongs to
 
 ## How Projects Work
 Use `File` -> `Open Folder` to open the root folder for a Nim project.  You should have a main project `.nim` file, which is autodetected using the following steps:
@@ -38,6 +44,13 @@ If there are a lot of errors/warnings when linting, Atom will slow down a lot.  
 
 ## Jump To Definition
 Use Ctrl + Shift + Left Click to jump to the definition under the mouse cursor.
+
+## Build and Run
+Use `Ctrl`-`Shift`-B to build, which compiles the current file or its project.  If there are errors, they will show up normally.  These may be different that the linting errors (and probably are more accurate).  The status bar in the lower right will show if it was successful or failed.
+
+Use `F5` to build and run the current file or its project.  If the build fails, it will not try to run anything.  Be sure you set up the `Run Command` first!
+
+These commands can work on individual files or projects.  If you are editing a file that's not in a project, these commands will just build/run that file.  If it is part of a project, these commands will build/run the project root file.
 
 ## Notes
 Sometimes the nim compiler or nimsuggest crashes, and you'll see the error notification.  It's not a big deal, and nimsuggest will auto-restart.  You can view full error dumps in the developer tools console (`Ctrl`-`Alt`-`i` or `Ctrl`-`Shift`-`i`).  This can be annoying when doing on-the-fly error checking, so it is disabled by default.
