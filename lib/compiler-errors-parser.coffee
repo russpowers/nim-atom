@@ -11,6 +11,9 @@ matchWarningErrorHint = (line) ->
 matchInternalError = (line) ->
   line.match /// Error:\sinternal\serror: ///
 
+matchSigsegvError = (line) ->
+  line.match /^(SIGSEGV\:.+)/
+
 processLine = (filePath, line, state) ->
   templateMatch = matchTemplate line
 
@@ -41,15 +44,26 @@ processLine = (filePath, line, state) ->
     line = parseInt(line) - 1
     col  = parseInt(col) - 1
 
-    item =
-      filePath: sourcePath
-      type: type
-      text: msg
-      range: [[line, col],[line, col+1]]
-
     if state.trace?
-      item.trace = state.trace.slice().reverse()
+      trace = state.trace.slice()
       state.trace.length = 0
+
+      trace.push
+        filePath: sourcePath
+        type: "Trace"
+        text: msg
+        range: [[line, col],[line, col+1]]
+
+      item = trace.shift()
+      item.type = type
+      item.text = "(template/generic instantiation from here) #{msg}"
+      item.trace = trace
+    else
+      item =
+        filePath: sourcePath
+        type: type
+        text: msg
+        range: [[line, col],[line, col+1]]
 
     return item
     
@@ -60,12 +74,18 @@ processLine = (filePath, line, state) ->
     state.foundInternalError = true
     return
 
+  sigsegvErrorMatch = matchSigsegvError line
+
+  if sigsegvErrorMatch
+    state.foundInternalError = true
+    return
+
 class CompilerErrorsParser
   constructor: (@options) ->
 
   parse: (filePath, errorLines) ->
     results = []
-
+    err = null
     state =
       foundInternalError: false
 
@@ -76,8 +96,13 @@ class CompilerErrorsParser
       else if processed?
         results.push processed
     
-    if foundInternalError?
-      err = "ERROR: Compiler internal error.\nCommand: #{@options.nimExe} #{args.join(' ')}\nOutput:\n#{errorLines.join('\n')}"
+    if state.foundInternalError
+      results.push
+        filePath: filePath
+        type: 'Error'
+        text: 'Compiler internal error.  Details dumped to developer console.  Go to View -> Developer -> Toggle Developer Tools and open the Console to view.'
+        range: [[0, 0],[0, 0]]
+      console.log "ERROR: Compiler execution failed.\nOutput:\n#{errorLines.join('\n')}"
 
     return {
       err: err

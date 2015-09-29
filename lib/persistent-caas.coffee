@@ -27,8 +27,10 @@ class PersistentCaas extends Caas
     if cmd.dirtyFileData?
       args = "#{type} \"#{cmd.filePath}\";\"#{@tempFilePath}\":#{cmd.row}:#{cmd.col}\n"
       fs.writeFile @tempFilePath, cmd.dirtyFileData, (err) =>
+        # If we are not in the original cmd, an error happened during the callback
+        return if @currentCmd != cmd
         if err?
-          @onCommandDone err
+          @onCommandFailed err
         else
           @process.process.stdin.write args
     else

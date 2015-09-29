@@ -27,6 +27,13 @@ class Caas
     @ensureCaas()
     @doCommand cmd
 
+  resetVarsAndCallback: (err, value) ->
+    if @currentCb?
+      currentCb = @currentCb
+      @currentCb = null
+      @currentCmd = null
+      currentCb err, value
+
   onCommandFailed: (error) ->
     @retries = @retries + 1
     if @retries > 3
@@ -35,17 +42,13 @@ class Caas
         else
           printedCmd = "#{@currentCmd.type}: #{@currentCmd.filePath},#{@currentCmd.row},#{@currentCmd.col}"
           "ERROR: Command failed multiple times.\nCommand:\n#{printedCmd}\nOutput:\n#{@output.join('\n')}"
-      @currentCb message
+      @resetVarsAndCallback message
     else
       cb = () => @doCommandInternal @currentCmd
       setTimeout cb, 100
 
   onCommandDone: ->
-    if @currentCb?
-      @currentCb null, @lines
-    #cb = () => 
-      
-    #setTimeout cb, 0
+    @resetVarsAndCallback null, @lines
 
   logOutput: (text) ->
     @output.push text

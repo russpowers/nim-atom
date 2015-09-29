@@ -12,7 +12,6 @@ module.exports = (executor, options) ->
     return new Promise (resolve, reject) ->
       if not options.nimExists
         resolve []
-
       executor.execute editor, CommandTypes.LINT, (err, results) ->
         if err?
           resolve []

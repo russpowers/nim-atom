@@ -106,7 +106,7 @@ module.exports =
 
     @runner = new Runner(() => @statusBarView)
     @projectManager = new ProjectManager()
-    @executor = new Executor @projectManager
+    @executor = new Executor @projectManager, @options
     @checkForExes => 
       require('atom-package-deps').install('nim', true)
         .then => @activateAfterChecks(state)
@@ -128,14 +128,14 @@ module.exports =
         count += 1
 
     if count == 0
-      cb()
+      return cb()
 
     for editor in atom.workspace.getTextEditors()
       if editor.isModified()
         @save editor, ->
           savedCount += 1
           if savedCount == count
-            cb()
+            return cb()
 
     null
 

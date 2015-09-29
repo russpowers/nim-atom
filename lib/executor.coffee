@@ -10,9 +10,9 @@ prettifyDocStr = (str) ->
   if replaced == '"' or replaced == '' then ' ' else replaced
 
 class Executor
-  constructor: (@projectManager) ->
+  constructor: (@projectManager, @options) ->
     @commandQueue = []
-    @compilerErrorsParser = new CompilerErrorsParser()
+    @compilerErrorsParser = new CompilerErrorsParser(@options)
 
   parseSuggest: (lines) ->
     result = for ln in lines
@@ -74,11 +74,22 @@ class Executor
     data = parseFn lines
     
 
+  doNextCommand: () ->
+    if @commandQueue.length > 0
+      next = @commandQueue.shift()
+      cb = () => 
+        @doCommand next
+      setTimeout cb, 0
+    else
+      @currentCommand = null
+
   doCommand: (cmd) ->
     @currentCommand = cmd
     cmd.project.sendCommand cmd, (err, result) =>
-      # Handle this better
-      return @doError(cmd, err) if err?
+      if err?
+        @doError(cmd, err)
+        @doNextCommand()
+        return
 
       parsedResult = if cmd.type == CommandTypes.BUILD
           res = @compilerErrorsParser.parse(cmd.filePath, result.lines)
@@ -98,17 +109,11 @@ class Executor
           @parseUsage(result)
 
       if parsedResult.err?
-        @doError cmd, data.err
+        @doError cmd, parsedResult.err
       else
         cmd.cb null, parsedResult.result, parsedResult.extra
 
-      if @commandQueue.length > 0
-        next = @commandQueue.shift()
-        cb = () => 
-          @doCommand next
-        setTimeout cb, 0
-      else
-        @currentCommand = null
+      @doNextCommand()
 
   execute: (editor, commandType, cb) ->
     cmd =
@@ -125,6 +130,12 @@ class Executor
     else
       cmd.project = @projectManager.getProjectForPath cmd.filePath
       editor.nimProject = cmd.project
+
+    # If we can't find the project, it means the project manager is still not initialized,
+    # try again in a moment
+    if not cmd.project?
+      setTimeout (() => @execute(editor, commandType, cb)), 1
+      return
 
     # Make sure only one command executes at a time
     if @currentCommand?
