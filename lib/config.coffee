@@ -14,7 +14,7 @@ module.exports =
   nimLibPath:
     type: 'string'
     default: ''
-    description: 'Sometimes nimsuggest can\'t find the nim library path for suggestions.  Set this to explicitly tell nimsuggest where it is (ex: c:\\nim\\lib).'
+    description: 'Full path to the nim standard library (ex: c:\\nim\\lib).  This is optional, only use this if nim or nimsuggest cannot find system.nim.'
     order: 3
 
   nimsuggestEnabled:

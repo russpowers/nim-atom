@@ -69,9 +69,8 @@ module.exports =
   checkForExes: (cb) ->
     if @options.nimLibPath.length
       if not isFile path.join(@options.nimLibPath, 'system.nim')
-        if not @options.nimLibPathExists?
-          @options.nimLibPathExists = false
-          atom.notifications.addError "Could not find nim libs, please check nim package settings"
+        @options.nimLibPathExists = false
+        atom.notifications.addError "Could not find nim libs, please check nim package settings"
       else
         if @options.nimLibPathExists == false
           atom.notifications.addSuccess "Found nim libs"
@@ -250,12 +249,12 @@ module.exports =
       @options.nimSuggestEnabled = enabled.newValue
       updateProjectManagerDebounced()
 
+    @subscriptions.add atom.config.onDidChange 'nim.nimLibPath', (path) =>
+      @options.nimLibPath = fixSystemPath path.newValue
+      updateProjectManagerDebounced()
+
     @subscriptions.add atom.config.observe 'nim.useCtrlShiftClickToJumpToDefinition', (enabled) =>
       @options.ctrlShiftClickEnabled = enabled
-
-    @subscriptions.add atom.config.observe 'nim.nimLibPath', (value) =>
-      @options.nimLibPath = fixSystemPath value
-      updateProjectManagerDebounced()
 
     @subscriptions.add atom.config.observe 'nim.autocomplete', (value) =>
       @options.autocomplete = if value == 'Always'

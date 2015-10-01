@@ -17,17 +17,18 @@ class Compiler
     fs.close tempFile.fd
 
   check: (filePath, cb) ->
-    args = ["check", "--listFullPaths", "--colors:off", "--verbosity:0", filePath]
-    if @options.checkArgs?
-      args = args.concat @options.checkArgs
-
+    args = ["check", "--listFullPaths", "--colors:off", "--verbosity:0"]
+    if @options.nimLibPath.length
+      args.push "--lib:\"#{@options.nimLibPath}\""
+    args.push filePath
     @execute path.dirname(filePath), args, cb
 
   checkDirty: (rootFilePath, filePath, fileText, cb) ->
     trackArg = "--trackDirty:#{@tempFilePath},#{filePath},1,1"
-    args = ["check", "--listFullPaths", "--colors:off", "--verbosity:0", trackArg, rootFilePath]
-    if @options.checkArgs?
-      args = args.concat @options.checkArgs
+    args = ["check", "--listFullPaths", "--colors:off", "--verbosity:0", trackArg]
+    if @options.nimLibPath.length
+      args.push "--lib:\"#{@options.nimLibPath}\""
+    args.push rootFilePath
     fs.writeFile @tempFilePath, fileText, (err) =>
       if err?
         cb "Error writing temp file for compiler"
@@ -38,12 +39,18 @@ class Compiler
     if binPath?
       mkdirp path.dirname(binPath), (err) =>
         cb(err) if err?
-        args = ["c", "--listFullPaths", "--colors:off", "--verbosity:0", "--out:#{binPath}", filePath]
+        args = ["c", "--listFullPaths", "--colors:off", "--verbosity:0", "--out:#{binPath}"]
+        if @options.nimLibPath.length
+          args.push "--lib:\"#{@options.nimLibPath}\""
+        args.push filePath
         if @options.compileArgs?
           args = args.concat @options.compileArgs
         @execute path.dirname(filePath), args, cb
     else
-      args = ["c", "--listFullPaths", "--colors:off", "--verbosity:0", filePath]
+      args = ["c", "--listFullPaths", "--colors:off", "--verbosity:0"]
+      if @options.nimLibPath.length
+        args.push "--lib:\"#{@options.nimLibPath}\""
+      args.push filePath
       if @options.compileArgs?
           args = args.concat @options.compileArgs
       @execute path.dirname(filePath), args, cb

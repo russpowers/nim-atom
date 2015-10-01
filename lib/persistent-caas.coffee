@@ -69,7 +69,7 @@ class PersistentCaas extends Caas
 
     @process = new BufferedProcess
       command: @options.nimSuggestExe
-      args: ['--stdin', @rootFilePath]
+      args: args
       options:
         cwd: @folderPath
       stdout: (data) => @processData data
