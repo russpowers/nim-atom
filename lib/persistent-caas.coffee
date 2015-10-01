@@ -62,6 +62,11 @@ class PersistentCaas extends Caas
 
   startCaas: ->
     @initialLineCount = 0
+    if @options.nimLibPath.length
+      args = ["--lib:\"#{@options.nimLibPath}\"", '--stdin', @rootFilePath]
+    else
+      args = ['--stdin', @rootFilePath]
+
     @process = new BufferedProcess
       command: @options.nimSuggestExe
       args: ['--stdin', @rootFilePath]

@@ -1,3 +1,4 @@
+path = require 'path'
 {BufferedProcess, Point} = require 'atom'
 SubAtom = require 'sub-atom'
 Config = require './config'
@@ -8,7 +9,7 @@ Executor = require './executor'
 Runner = require './runner'
 NimStatusBarView = require './nim-status-bar-view'
 {CommandTypes, AutoCompleteOptions} = require './constants'
-{hasExt, arrayEqual, separateSpaces, debounce} = require './util'
+{hasExt, arrayEqual, separateSpaces, debounce, isFile} = require './util'
 
 
 
@@ -29,7 +30,7 @@ checkForExecutable = (executablePath, cb) ->
   else
     cb false
 
-fixExecutableFilename = (executablePath) ->
+fixSystemPath = (executablePath) ->
   if executablePath.indexOf('~') != -1
     executablePath.replace('~', process.env.HOME)
   else
@@ -66,6 +67,15 @@ module.exports =
     @updateProjectsOnEditors()
 
   checkForExes: (cb) ->
+    if @options.nimLibPath.length
+      if not isFile path.join(@options.nimLibPath, 'system.nim')
+        if not @options.nimLibPathExists?
+          @options.nimLibPathExists = false
+          atom.notifications.addError "Could not find nim libs, please check nim package settings"
+      else
+        if @options.nimLibPathExists == false
+          atom.notifications.addSuccess "Found nim libs"
+
     oldNimExists = @options.nimExists
     oldNimSuggestExists = @options.nimSuggestExists
     checkedNim = false
@@ -99,10 +109,11 @@ module.exports =
 
   activate: (state) ->
     @options =
-      nimSuggestExe: fixExecutableFilename(atom.config.get('nim.nimsuggestExecutablePath') or 'nimsuggest')
-      nimExe: fixExecutableFilename(atom.config.get('nim.nimExecutablePath') or 'nim')
+      nimSuggestExe: fixSystemPath(atom.config.get('nim.nimsuggestExecutablePath') or 'nimsuggest')
+      nimExe: fixSystemPath(atom.config.get('nim.nimExecutablePath') or 'nim')
       nimSuggestEnabled: atom.config.get 'nim.nimsuggestEnabled'
       lintOnFly: atom.config.get 'nim.onTheFlyChecking'
+      nimLibPath: fixSystemPath(atom.config.get('nim.nimLibPath'))
 
     @runner = new Runner(() => @statusBarView)
     @projectManager = new ProjectManager()
@@ -223,11 +234,11 @@ module.exports =
 
     @subscriptions = new SubAtom()
     @subscriptions.add atom.config.onDidChange 'nim.nimExecutablePath', (path) =>
-      @options.nimExe = fixExecutableFilename(path.newValue or 'nim')
+      @options.nimExe = fixSystemPath(path.newValue or 'nim')
       updateProjectManagerDebounced()
 
     @subscriptions.add atom.config.onDidChange 'nim.nimsuggestExecutablePath', (path) =>
-      @options.nimSuggestExe = fixExecutableFilename(path.newValue or 'nimsuggest')
+      @options.nimSuggestExe = fixSystemPath(path.newValue or 'nimsuggest')
       nsen = atom.config.get 'nim.nimsuggestEnabled'
       if path.newValue == ''
         atom.config.set('nim.nimsuggestEnabled', false) if nsen
@@ -241,6 +252,10 @@ module.exports =
 
     @subscriptions.add atom.config.observe 'nim.useCtrlShiftClickToJumpToDefinition', (enabled) =>
       @options.ctrlShiftClickEnabled = enabled
+
+    @subscriptions.add atom.config.observe 'nim.nimLibPath', (value) =>
+      @options.nimLibPath = fixSystemPath value
+      updateProjectManagerDebounced()
 
     @subscriptions.add atom.config.observe 'nim.autocomplete', (value) =>
       @options.autocomplete = if value == 'Always'

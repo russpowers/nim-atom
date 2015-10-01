@@ -16,6 +16,11 @@ module.exports =
     pathstr.endsWith ext
   removeExt: (pathstr) ->
     pathstr.replace(/\.[^\\\/.]+$/, "")
+  isFile: (pathstr) ->
+    try
+      return fs.lstatSync(pathstr).isFile()
+    catch err
+      if err.code == 'ENOENT' then return false else throw err
   isDirectory: (pathstr) ->
     try
       return fs.lstatSync(pathstr).isDirectory()
