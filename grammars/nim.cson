@@ -1,5 +1,5 @@
 bundleUUID: "E83914D2-2EF2-455C-80A3-7EC1E029D589"
-fileTypes: ["nim", "nims"]
+fileTypes: ["nim", "nims", "nimble"]
 scopeName: "source.nim"
 firstLineMatch: '^#!.*\\bnimscript\\b'
 name: "Nim"
@@ -63,7 +63,7 @@ patterns: [
   {
     comment: "Other keywords."
     name: "keyword.other.nim"
-    match: "(\\b(addr|as|atomic|bind|cast|const|converter|discard|distinct|div|enum|export|from|import|in|include|let|mod|mixin|object|of|ptr|ref|shl|shr|static|type|var)\\b)"
+    match: "(\\b(addr|unsafeAddr|as|atomic|bind|cast|const|converter|discard|distinct|div|enum|export|from|import|in|include|let|mod|mixin|object|of|ptr|ref|shl|shr|static|type|var)\\b)"
   }
   {
     comment: "Invalid and unused keywords."
