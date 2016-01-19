@@ -6,6 +6,12 @@ name: "Nim"
 
 patterns: [
   {
+    include: '#nim_multiline_doc_comment'
+  }
+  {
+    include: '#nim_multiline_comment'
+  }
+  {
     comment: "A documentation comment."
     captures:
       1:
@@ -546,3 +552,18 @@ patterns: [
     name: "source.glsl.embedded.nim"
   }
 ]
+
+repository : {
+  nim_multiline_comment: {
+    begin: '#\\['
+    end: '\\]#'
+    patterns: [ include: '#nim_multiline_comment' ]
+    name: "comment.block.nim"
+  }
+  nim_multiline_doc_comment: {
+    begin: '##\\['
+    end: '\\]##'
+    patterns: [ include: '#nim_multiline_doc_comment' ]
+    name: "doc.comment.block.nim"
+  }
+}
