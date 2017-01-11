@@ -10,7 +10,7 @@ KnownFiles = require './known-files'
 class Compiler
   constructor: (@options) ->
     @trackedTemp = temp.track()
-    tempFile = @trackedTemp.openSync 
+    tempFile = @trackedTemp.openSync
       prefix: 'nimcheck'
       suffix: '.nim'
     @tempFilePath = tempFile.path
@@ -18,6 +18,8 @@ class Compiler
 
   check: (filePath, cb) ->
     args = ["check", "--listFullPaths", "--colors:off", "--verbosity:0"]
+    for arg in @options.nimCustomArgs
+      args.push arg
     if @options.nimLibPath.length
       args.push "--lib:\"#{@options.nimLibPath}\""
     args.push filePath
@@ -26,6 +28,8 @@ class Compiler
   checkDirty: (rootFilePath, filePath, fileText, cb) ->
     trackArg = "--trackDirty:#{@tempFilePath},#{filePath},1,1"
     args = ["check", "--listFullPaths", "--colors:off", "--verbosity:0", trackArg]
+    for arg in @options.nimCustomArgs
+      args.push arg
     if @options.nimLibPath.length
       args.push "--lib:\"#{@options.nimLibPath}\""
     args.push rootFilePath
