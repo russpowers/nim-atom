@@ -21,7 +21,7 @@ checkForExecutable = (executablePath, cb) ->
         args: ['--version']
         exit: (code) =>
           cb(code == 0)
-          
+
       process.onWillThrowError ({error,handle}) =>
         handle()
         cb false
@@ -47,7 +47,13 @@ navigateToFile = (file, line, col, sourceEditor) ->
       pos = new Point(atomLine, col)
       ed.scrollToBufferPosition(pos, center: true)
       ed.setCursorBufferPosition(pos)
-  
+
+parseArguments = (argString) ->
+  # Currently splits simply on white space. Perfect solution would require
+  # parsing of quotes and escape characters.
+  (argString.split /\s+/).filter (arg) -> arg isnt ""
+
+
 module.exports =
   config: Config
 
@@ -55,7 +61,7 @@ module.exports =
     # Try to match up old and new projects
     for editor in atom.workspace.getTextEditors()
       if editor.nimProject?
-        editor.nimProject = 
+        editor.nimProject =
           if editor.nimProject.folderPath?
             @projectManager.getProjectForPath editor.nimProject.folderPath
           else
@@ -111,16 +117,17 @@ module.exports =
       nimSuggestExe: fixSystemPath(atom.config.get('nim.nimsuggestExecutablePath') or 'nimsuggest')
       nimExe: fixSystemPath(atom.config.get('nim.nimExecutablePath') or 'nim')
       nimSuggestEnabled: atom.config.get 'nim.nimsuggestEnabled'
+      nimCustomArgs: parseArguments(atom.config.get('nim.nimCustomArguments') or '')
       lintOnFly: atom.config.get 'nim.onTheFlyChecking'
       nimLibPath: fixSystemPath(atom.config.get('nim.nimLibPath'))
 
     @runner = new Runner(() => @statusBarView)
     @projectManager = new ProjectManager()
     @executor = new Executor @projectManager, @options
-    @checkForExes => 
+    @checkForExes =>
       require('atom-package-deps').install('nim', true)
         .then => @activateAfterChecks(state)
-        
+
   save: (editor, cb) ->
     if editor.isModified()
       disposable = editor.buffer.onDidSave ->
@@ -163,7 +170,7 @@ module.exports =
       if not success
         cb("Build failed.") if cb?
         return
-        
+
       project = editor.nimProject
       filePath = editor.getPath()
 
@@ -207,7 +214,7 @@ module.exports =
 
   activateAfterChecks: (state) ->
     @updateProjectManager()
-    
+
     self = @
 
     atom.commands.add 'atom-text-editor',
@@ -245,6 +252,10 @@ module.exports =
         atom.config.set('nim.nimsuggestEnabled', true) if not nsen
       updateProjectManagerDebounced()
 
+    @subscriptions.add atom.config.onDidChange 'nim.nimCustomArguments', (args) =>
+      @options.nimCustomArgs = parseArguments(args.newValue or '')
+      updateProjectManagerDebounced()
+
     @subscriptions.add atom.config.onDidChange 'nim.nimsuggestEnabled', (enabled) =>
       @options.nimSuggestEnabled = enabled.newValue
       updateProjectManagerDebounced()
@@ -278,7 +289,7 @@ module.exports =
       editorLines = editorElement.shadowRoot.querySelector '.lines'
 
       editorSubscriptions.add editorLines, 'mousedown', (e) =>
-        return unless @options.ctrlShiftClickEnabled 
+        return unless @options.ctrlShiftClickEnabled
         return unless e.which is 1 and e.shiftKey and e.ctrlKey
         screenPos = editorElement.component.screenPositionForMouseEvent(e)
         editor.setCursorScreenPosition screenPos
