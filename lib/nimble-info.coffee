@@ -29,7 +29,7 @@ getNimbleDict = (folderPath) ->
 
 class NimbleInfo
   constructor: (@folderPath) ->
-    [@data, @nimbleFilePath] = getNimbleDict folderPath
+    [@data, @nimbleFilePath] = getNimbleDict @folderPath
     @hasNimbleFile = @data?
     @srcDir = path.join(@folderPath, @getFirst('srcDir') || '')
     @binDir = path.join(@folderPath, @getFirst('binDir') || '')
