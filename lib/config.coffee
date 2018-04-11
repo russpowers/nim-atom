@@ -1,51 +1,45 @@
 module.exports =
-  nimExecutablePath:
+  nimBinPath:
     type: 'string'
     default: ''
-    description: 'Full path to the nim executable (ex: c:\\nim\\bin\\nim).  This is not required if nim is in your PATH.'
+    description: 'Full path to the nim bin directory (ex: c:\\nim\\bin).  This is not required if nim is in your PATH.'
     order: 1
-
-  nimsuggestExecutablePath:
-    type: 'string'
-    default: ''
-    description: 'Full path to the nimsuggest executable (ex: c:\\nimsuggest\\nimsuggest).  Get it at <a href="https://github.com/nim-lang/nimsuggest">https://github.com/nim-lang/nimsuggest</a>.'
-    order: 2
 
   nimLibPath:
     type: 'string'
     default: ''
-    description: 'Full path to the nim standard library (ex: c:\\nim\\lib).  This is optional, only use this if nim or nimsuggest cannot find system.nim.'
-    order: 3
+    description: 'Full path to the nim standard library directory (ex: c:\\nim\\lib).  This is optional, only use this if nim or nimsuggest cannot find system.nim.'
+    order: 2
 
   nimsuggestEnabled:
     type: 'boolean'
-    default: false
+    default: true
     description: 'Use nimsuggest server to speed up autocomplete and jump to definition.  Only available when opening a folder where one of the Project Filenames (see below) is found.'
-    order: 4
+    order: 3
 
   onTheFlyChecking:
     type: 'boolean'
-    default: false
+    default: true
     description: 'Enables live file-level eror checking.  If this is disabled, files will only be checked for errors on save.  You must restart Atom for this to take effect.'
-    order: 5
+    order: 4
 
   autocomplete:
     type: 'string'
     default: 'Always'
     enum: ['Always', 'Only after dot', 'Never']
-    order: 6
+    order: 5
 
   useCtrlShiftClickToJumpToDefinition:
     type: 'boolean'
     default: true
     description: 'If this is disabled, alt-g can also be used, but it is slow for some reason.'
-    order: 7
+    order: 6
 
   autosaveBeforeBuild:
     type: 'string'
     default: 'Save all files'
     enum: ['Save all files', 'Save current file', "Don't save any files"]
-    order: 8
+    order: 7
 
   runCommand:
     type: 'string'
@@ -57,4 +51,4 @@ module.exports =
       <b>OSX w/ terminal:</b> <code>open -a Terminal "&#96;&lt;bin&gt;&#96;"</code><br/> 
       <b>Linux w/ terminal (gnome):</b> <code>gnome-terminal -e "&lt;bin&gt;"</code><br/>
       """
-    order: 9
+    order: 8

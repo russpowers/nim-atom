@@ -121,7 +121,7 @@ class Executor
     if editor.isModified()
       cmd.dirtyFileData = editor.getText()
     cursor = editor.getCursorBufferPosition()
-    cmd.col = cursor.column+1
+    cmd.col = cursor.column
     cmd.row = cursor.row+1
     cmd.filePath = editor.getPath()
     cmd.cb = cb

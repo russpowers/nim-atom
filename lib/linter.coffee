@@ -5,9 +5,10 @@ path = require 'path'
 {CommandTypes} = require './constants'
 
 module.exports = (executor, options) ->
+  name: 'Nim'
   grammarScopes: ['source.nim']
   scope: 'project'
-  lintOnFly: options.lintOnFly
+  lintsOnChange: options.lintOnFly
   lint: (editor) ->
     return new Promise (resolve, reject) ->
       if not options.nimExists

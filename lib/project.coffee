@@ -68,18 +68,25 @@ class Project
       if @rootFilePath?
         @rootFolderPath = path.dirname(@rootFilePath)
 
+      foundProject = false
+
       if @options.nimSuggestEnabled and @options.nimSuggestExists
         if @rootFilePath?
           @caas = new PersistentCaas @folderPath, @rootFilePath, @options
+          foundProject = true
         else
           # We'd like to use nimsuggest even though there isn't a project, so try guessing..
           guessedProjectFile = guessRootFilePath @folderPath, ['<nimble>.nim', 'proj.nim', '<parent>.nim']
           if guessedProjectFile?
             @caas = new PersistentCaas @folderPath, guessedProjectFile, @options
+            foundProject = true
           else
             @caas = new OnDemandCaas @options
       else if @options.nimExists
         @caas = new OnDemandCaas @options
+
+      if foundProject
+        atom.notifications.addInfo("Found nim project at " + @caas.folderPath)
 
   getBinFilePathFor: (filePath) ->
     if @binFilePath? then @binFilePath else removeExt(filePath)

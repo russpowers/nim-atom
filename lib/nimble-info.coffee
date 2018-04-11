@@ -8,10 +8,11 @@ readNimbleData = (nimbleFilePath) ->
   lines = separateLines fdata.toString()
   data = {}
   for line in lines
-    match = line.match /^(\w+)\s*=\s*\"([^\"]*)\"/
+    match = line.match(/^(\w+)\s*=\s*\"([^\"]*)\"/) or line.match(/^(\w+)\s*=\s*@\[\"([^\"]*)\"\]/)
     if match
       [_, key, value] = match
       data[key] = value
+    
   data
 
 getNimbleDict = (folderPath) ->
@@ -29,7 +30,7 @@ getNimbleDict = (folderPath) ->
 
 class NimbleInfo
   constructor: (@folderPath) ->
-    [@data, @nimbleFilePath] = getNimbleDict folderPath
+    [@data, @nimbleFilePath] = getNimbleDict @folderPath
     @hasNimbleFile = @data?
     @srcDir = path.join(@folderPath, @getFirst('srcDir') || '')
     @binDir = path.join(@folderPath, @getFirst('binDir') || '')

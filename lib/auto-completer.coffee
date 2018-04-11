@@ -1,6 +1,6 @@
 {Point} = require 'atom'
 {CommandTypes, AutoCompleteOptions} = require './constants'
-fuzzaldrin = require 'fuzzaldrin'
+fuzzaldrin = require 'fuzzaldrin-plus'
 pragmas = require './pragmas'
 
 DOTTED = 1

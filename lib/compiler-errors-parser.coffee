@@ -24,48 +24,29 @@ processLine = (filePath, line, state) ->
     line = parseInt(line) - 1
     col  = parseInt(col) - 1
 
-    if not state.trace?
-      state.trace = []
-
-    state.trace.push
-      filePath: sourcePath
-      type: "Trace"
-      text: msg
-      range: [[line, col],[line, col+1]]
-        
     return
+      location:
+        file: sourcePath
+        position: [[line, col],[line, col+1]]
+      severity: "info"
+      excerpt: msg
 
   wehMatch = matchWarningErrorHint line
   
   if wehMatch
     [_, sourcePath, line, col, type, msg] = wehMatch
     sourcePath = if sourcePath.endsWith 'stdinfile.nim' then filePath else KnownFiles.getCanonical(sourcePath)
-    if type == 'Hint' then type = 'Info'
+    if type == 'Hint' then type = 'info'
+    type = type.toLowerCase()
     line = parseInt(line) - 1
     col  = parseInt(col) - 1
 
-    if state.trace?
-      trace = state.trace.slice()
-      state.trace.length = 0
-
-      trace.push
-        filePath: sourcePath
-        type: "Trace"
-        text: msg
-        range: [[line, col],[line, col+1]]
-
-      item = trace.shift()
-      item.type = type
-      item.text = "(template/generic instantiation from here) #{msg}"
-      item.trace = trace
-    else
-      item =
-        filePath: sourcePath
-        type: type
-        text: msg
-        range: [[line, col],[line, col+1]]
-
-    return item
+    return
+      location:
+        file: sourcePath
+        position: [[line, col],[line, col+1]]
+      severity: type
+      excerpt: msg
     
 
   internalErrorMatch = matchInternalError line
@@ -98,11 +79,15 @@ class CompilerErrorsParser
     
     if state.foundInternalError
       results.push
-        filePath: filePath
-        type: 'Error'
-        text: 'Compiler internal error.  Details dumped to developer console.  Go to View -> Developer -> Toggle Developer Tools and open the Console to view.'
-        range: [[0, 0],[0, 0]]
+        location:
+          file: filePath
+          position: [[0, 0],[0, 0]]
+        severity: 'Error'
+        excerpt: 'Compiler internal error.  Details dumped to developer console.  Go to View -> Developer -> Toggle Developer Tools and open the Console to view.'
+        
       console.log "ERROR: Compiler execution failed.\nOutput:\n#{errorLines.join('\n')}"
+
+    console.log(results)
 
     return {
       err: err

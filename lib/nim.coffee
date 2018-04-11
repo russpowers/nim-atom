@@ -31,10 +31,16 @@ checkForExecutable = (executablePath, cb) ->
     cb false
 
 fixSystemPath = (executablePath) ->
-  if executablePath.indexOf('~') != -1
+  if executablePath? and executablePath.indexOf('~') != -1
     executablePath.replace('~', process.env.HOME)
   else
     executablePath
+
+joinOptPath = (base, file) ->
+  if base?
+    path.join(base, file)
+  else
+    file
 
 navigateToFile = (file, line, col, sourceEditor) ->
   # This function uses Nim coordinates
@@ -108,8 +114,8 @@ module.exports =
 
   activate: (state) ->
     @options =
-      nimSuggestExe: fixSystemPath(atom.config.get('nim.nimsuggestExecutablePath') or 'nimsuggest')
-      nimExe: fixSystemPath(atom.config.get('nim.nimExecutablePath') or 'nim')
+      nimSuggestExe: fixSystemPath(joinOptPath(atom.config.get('nim.nimBinPath'), 'nimsuggest'))
+      nimExe: fixSystemPath(joinOptPath(atom.config.get('nim.nimBinPath'), 'nim'))
       nimSuggestEnabled: atom.config.get 'nim.nimsuggestEnabled'
       lintOnFly: atom.config.get 'nim.onTheFlyChecking'
       nimLibPath: fixSystemPath(atom.config.get('nim.nimLibPath'))
@@ -185,13 +191,13 @@ module.exports =
             @statusBarView?.showError("Nim build failed")
             cb("Build failed") if cb?
           else if extra.code != 0
-            @linterApi.setMessages(@linter, result)
+            @linterApi?.setMessages(@linter, result)
             @statusBarView?.showError("Nim build failed")
             # atom.notifications.addError "Build failed.",
             #   detail: "Project root: #{extra.filePath}"
             cb(false) if cb?
           else
-            @linterApi.setMessages(@linter, result)
+            @linterApi?.setMessages(@linter, result)
             @statusBarView?.showSuccess("Nim build succeeded")
             # atom.notifications.addSuccess "Build succeeded.",
             #   detail: "Project root: #{extra.filePath}"
@@ -275,11 +281,11 @@ module.exports =
       # For binding ctrl-shift-click
       editorSubscriptions = new SubAtom()
       editorElement = atom.views.getView(editor)
-      editorLines = editorElement.shadowRoot.querySelector '.lines'
+      editorLines = editorElement.querySelector '.lines'
 
       editorSubscriptions.add editorLines, 'mousedown', (e) =>
         return unless @options.ctrlShiftClickEnabled 
-        return unless e.which is 1 and e.shiftKey and e.ctrlKey
+        return unless e.which is 1 and e.shiftKey and (e.ctrlKey or (process.platform == 'darwin' && e.metaKey))
         screenPos = editorElement.component.screenPositionForMouseEvent(e)
         editor.setCursorScreenPosition screenPos
         @gotoDefinition editor
