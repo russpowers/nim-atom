@@ -2,6 +2,10 @@
 
 This is an Atom package for the Nim language that integrates with the Nim compiler and Nimsuggest.
 
+# Status
+
+I no longer use Atom, but I will accept pull requests.  It should be basically working as of April 2018.
+
 ## Features:
 * Autocomplete
 * Linting/Error Checking (on file save or on-the-fly)
@@ -10,13 +14,11 @@ This is an Atom package for the Nim language that integrates with the Nim compil
 
 ## Installation
 1. [Install Nim](http://nim-lang.org/download.html) or [build Nim from source](https://github.com/nim-lang/Nim)
-2. [Install Nimble](https://github.com/nim-lang/nimble) (optional, needed for Nimsuggest)
-3. [Install Nimsuggest](https://github.com/nim-lang/nimsuggest) (optional, highly recommended, improves autocomplete and jump-to-definition performance)
-4. Install this package in Atom: `File` -> `Settings` (or `Edit` -> `Preferences`) -> `Install`, then search for `nim`
+2. Install this package in Atom: `File` -> `Settings` (or `Edit` -> `Preferences`) -> `Install`, then search for `nim`
 
 ## Configuration
 1. Go to the package settings in Atom: `File` -> `Settings` (or `Edit` -> `Preferences`) -> `Packages` -> `nim`
-2. If `nim` and/or `nimsuggest` are not in your PATH, then set the paths for them.
+2. If `nim` is not in your PATH, then set the path for it.
 3. (Optional) Set up the `Run Command` for your OS (at the bottom of the nim package settings, see instructions there).
 
 ## Important input
@@ -51,6 +53,8 @@ Use `Ctrl`-`Shift`-B to build, which compiles the current file or its project.  
 Use `F5` to build and run the current file or its project.  If the build fails, it will not try to run anything.  Be sure you set up the `Run Command` first!
 
 These commands can work on individual files or projects.  If you are editing a file that's not in a project, these commands will just build/run that file.  If it is part of a project, these commands will build/run the project root file.
+
+Update 4/10/18: Atom has updated the UI for its linter, and it's terrible.  Template trace messages sometimes appear out of order now, not sure exactly what's going on.
 
 ## Notes
 Sometimes the nim compiler or nimsuggest crashes, and you'll see the error notification.  It's not a big deal, and nimsuggest will auto-restart.  You can view full error dumps in the developer tools console (`Ctrl`-`Alt`-`i` or `Ctrl`-`Shift`-`i`).  This can be annoying when doing on-the-fly error checking, so it is disabled by default.
